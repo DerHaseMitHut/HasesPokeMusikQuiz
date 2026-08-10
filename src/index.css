@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Baloo 2", "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, sans-serif;
+
+  /* Stage: dark, concert/Pokedex-screen backdrop the video content sits on */
+  --color-stage-950: #0d0d17;
+  --color-stage-900: #13131f;
+  --color-stage-800: #1b1b2c;
+  --color-stage-700: #262640;
+  --color-stage-600: #34345a;
+
+  /* Poke-red: primary action / buzzer / brand accent */
+  --color-poke-red-400: #ff5a3c;
+  --color-poke-red-500: #e3350d;
+  --color-poke-red-600: #b92b0a;
+  --color-poke-red-700: #8f2108;
+
+  /* Pikachu yellow: score highlights, winner glow */
+  --color-poke-yellow-300: #ffe066;
+  --color-poke-yellow-400: #ffcb05;
+  --color-poke-yellow-500: #f0b400;
+
+  /* Poke-blue: secondary accents, links, info */
+  --color-poke-blue-400: #4f97e0;
+  --color-poke-blue-500: #2a75bb;
+  --color-poke-blue-600: #3b4cca;
+
+  --color-note-green: #3ddc84;
+
+  --shadow-glow-yellow: 0 0 0 3px var(--color-poke-yellow-400), 0 0 24px 4px rgba(255, 203, 5, 0.45);
+  --shadow-glow-red: 0 0 0 3px var(--color-poke-red-500), 0 0 24px 4px rgba(227, 53, 13, 0.45);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-stage-950);
+  color: #f5f5f7;
+  font-family: var(--font-body);
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(59, 76, 202, 0.16), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(227, 53, 13, 0.12), transparent 45%);
+  background-attachment: fixed;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+}

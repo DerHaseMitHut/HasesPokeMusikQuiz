@@ -1,5 +1,55 @@
+import { useCallback, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { getRoomByCode, type Room } from '../lib/rooms'
+import { listSongsForRoom, type Song } from '../lib/songs'
+import SongUploadForm from '../components/SongUploadForm'
+import SongList from '../components/SongList'
+import LoadingScreen from '../components/LoadingScreen'
 import PagePlaceholder from '../components/PagePlaceholder'
 
 export default function HostRoomSetupPage() {
-  return <PagePlaceholder title="Raum-Setup" note="Wird in Phase 2 gebaut." />
+  const { roomCode } = useParams<{ roomCode: string }>()
+  const [room, setRoom] = useState<Room | null | undefined>(undefined)
+  const [songs, setSongs] = useState<Song[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  const reload = useCallback(async () => {
+    if (!roomCode) return
+    try {
+      const r = await getRoomByCode(roomCode)
+      setRoom(r)
+      if (r) setSongs(await listSongsForRoom(r.id))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Raum konnte nicht geladen werden.')
+    }
+  }, [roomCode])
+
+  useEffect(() => {
+    reload()
+  }, [reload])
+
+  if (error) return <PagePlaceholder title="Fehler" note={error} />
+  if (room === undefined) return <LoadingScreen />
+  if (room === null) return <PagePlaceholder title="Raum nicht gefunden" note={`Kein Raum mit Code „${roomCode}“.`} />
+
+  const joinUrl = `${window.location.origin}/join?code=${room.code}`
+
+  return (
+    <div className="min-h-screen px-6 py-12 max-w-3xl mx-auto flex flex-col gap-8">
+      <div>
+        <h1 className="font-display text-3xl font-700">{room.name}</h1>
+        <p className="text-white/60 mt-1">
+          Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
+        </p>
+        <p className="text-white/40 text-sm mt-1 break-all">Beitritts-Link: {joinUrl}</p>
+      </div>
+
+      <SongUploadForm roomId={room.id} nextOrderIndex={songs.length} onCreated={reload} />
+
+      <div>
+        <h2 className="font-display text-xl font-700 mb-4">Songs ({songs.length})</h2>
+        <SongList songs={songs} onChanged={reload} />
+      </div>
+    </div>
+  )
 }

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { createSong, uploadClip } from '../lib/songs'
+import { errorMessage } from '../lib/errors'
 
 export default function SongUploadForm({
   roomId,
@@ -57,7 +58,7 @@ export default function SongUploadForm({
       setSolutionFile(null)
       onCreated()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Song konnte nicht angelegt werden.')
+      setError(errorMessage(err, 'Song konnte nicht angelegt werden.'))
     } finally {
       setSubmitting(false)
       setProgress(null)

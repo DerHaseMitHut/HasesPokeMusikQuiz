@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { createRoom, listRooms, type Room } from '../lib/rooms'
 import { useAuthStore } from '../store/authStore'
+import { errorMessage } from '../lib/errors'
 import LoadingScreen from '../components/LoadingScreen'
 
 export default function HostRoomListPage() {
@@ -14,7 +15,7 @@ export default function HostRoomListPage() {
   useEffect(() => {
     listRooms()
       .then(setRooms)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Räume konnten nicht geladen werden.'))
+      .catch((err) => setError(errorMessage(err, 'Räume konnten nicht geladen werden.')))
   }, [])
 
   async function handleCreate(event: FormEvent) {
@@ -27,7 +28,7 @@ export default function HostRoomListPage() {
       setRooms((prev) => [room, ...(prev ?? [])])
       setNewRoomName('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Raum konnte nicht erstellt werden.')
+      setError(errorMessage(err, 'Raum konnte nicht erstellt werden.'))
     } finally {
       setCreating(false)
     }

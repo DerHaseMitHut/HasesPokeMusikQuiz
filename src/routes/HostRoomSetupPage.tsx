@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getRoomByCode, type Room } from '../lib/rooms'
 import { listSongsForRoom, type Song } from '../lib/songs'
+import { errorMessage } from '../lib/errors'
 import SongUploadForm from '../components/SongUploadForm'
 import SongList from '../components/SongList'
 import LoadingScreen from '../components/LoadingScreen'
@@ -20,7 +21,7 @@ export default function HostRoomSetupPage() {
       setRoom(r)
       if (r) setSongs(await listSongsForRoom(r.id))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Raum konnte nicht geladen werden.')
+      setError(errorMessage(err, 'Raum konnte nicht geladen werden.'))
     }
   }, [roomCode])
 

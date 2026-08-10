@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { ensureAnonymousSession, isCurrentUserHost } from '../lib/auth'
+import { errorMessage } from '../lib/errors'
 
 interface AuthState {
   userId: string | null
@@ -24,7 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (err) {
       set({
         ready: true,
-        error: err instanceof Error ? err.message : 'Anmeldung fehlgeschlagen.',
+        error: errorMessage(err, 'Anmeldung fehlgeschlagen.'),
       })
     }
   },

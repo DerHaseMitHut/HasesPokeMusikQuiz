@@ -3,6 +3,10 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[dev]
+  command = "npm run dev:vite"
+  targetPort = 5173
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

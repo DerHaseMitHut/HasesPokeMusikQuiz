@@ -88,7 +88,7 @@ export default function HostLivePage() {
           <button
             type="button"
             onClick={handleOpen}
-            disabled={busy}
+            disabled={busy || buzzerState?.is_open}
             className="font-display font-700 rounded-xl bg-poke-red-500 hover:bg-poke-red-400 disabled:opacity-50 transition-colors px-6 py-3"
           >
             Buzzer öffnen

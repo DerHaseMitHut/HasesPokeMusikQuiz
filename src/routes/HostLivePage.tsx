@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom'
 import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { listSongsForRoom, type Song } from '@/features/songs/songs'
 import { errorMessage } from '@/lib/errors'
-import { closeBuzzer, openBuzzer } from '@/features/buzzer/buzzer'
+import { closeBuzzer, openBuzzer, resolveBuzzer } from '@/features/buzzer/buzzer'
+import { awardPoints } from '@/features/players/players'
 import { loadSong, setPlaying, showSolution } from '@/features/playback/playback'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
 import { useQuizStore } from '@/store/quizStore'
@@ -111,6 +112,32 @@ export default function HostLivePage() {
     }
   }
 
+  async function handleCorrect() {
+    if (!winner || !currentSong) return
+    setBusy(true)
+    setError(null)
+    try {
+      await awardPoints(winner.id, currentSong.points)
+      await resolveBuzzer(room!.id)
+    } catch (err) {
+      setError(errorMessage(err, 'Punkte konnten nicht vergeben werden.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleWrong() {
+    setBusy(true)
+    setError(null)
+    try {
+      await openBuzzer(room!.id, buzzerState?.current_song_id ?? null)
+    } catch (err) {
+      setError(errorMessage(err, 'Buzzer konnte nicht neu geöffnet werden.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function handleShowSolution() {
     if (!playbackState?.current_song_id) return
     setBusy(true)
@@ -194,6 +221,28 @@ export default function HostLivePage() {
               ? `${winner.display_name} war zuerst!`
               : 'Buzzer ist geschlossen.'}
         </p>
+
+        {winner && (
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={handleCorrect}
+              disabled={busy || !currentSong}
+              className="font-display font-700 rounded-xl bg-note-green text-stage-950 hover:opacity-90 disabled:opacity-50 transition-opacity px-6 py-3"
+            >
+              Richtig{currentSong ? ` (+${currentSong.points})` : ''}
+            </button>
+            <button
+              type="button"
+              onClick={handleWrong}
+              disabled={busy}
+              className="font-display font-700 rounded-xl bg-stage-700 hover:bg-stage-600 disabled:opacity-50 transition-colors px-6 py-3"
+            >
+              Falsch
+            </button>
+          </div>
+        )}
+
         <div className="flex gap-3">
           <button
             type="button"

@@ -20,6 +20,11 @@ export async function closeBuzzer(roomId: string): Promise<void> {
   if (error) throw error
 }
 
+export async function resolveBuzzer(roomId: string): Promise<void> {
+  const { error } = await supabase.from('buzzer_state').update({ winner_player_id: null }).eq('room_id', roomId)
+  if (error) throw error
+}
+
 export async function pressBuzzer(roomId: string, roundId: string, playerId: string): Promise<void> {
   const { error } = await supabase.from('buzz_events').insert({ room_id: roomId, round_id: roundId, player_id: playerId })
   if (error) throw error

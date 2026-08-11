@@ -10,3 +10,8 @@ export async function joinRoom(roomId: string, userId: string, displayName: stri
   if (error) throw error
   return data
 }
+
+export async function awardPoints(playerId: string, points: number): Promise<void> {
+  const { error } = await supabase.rpc('award_points', { player_id: playerId, points })
+  if (error) throw error
+}

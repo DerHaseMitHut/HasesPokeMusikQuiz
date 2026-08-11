@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { verifyHostPassword } from '../lib/auth'
-import { useAuthStore } from '../store/authStore'
+import { verifyHostPassword } from '@/features/auth/auth'
+import { useAuthStore } from '@/features/auth/authStore'
 
 export default function HostLoginPage() {
   const [password, setPassword] = useState('')

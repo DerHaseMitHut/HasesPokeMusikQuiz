@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import { getRoomByCode, type Room } from '../lib/rooms'
-import { errorMessage } from '../lib/errors'
-import { useAuthStore } from '../store/authStore'
-import { useQuizStore } from '../store/quizStore'
-import Scoreboard from '../components/Scoreboard'
-import BuzzerButton from '../components/BuzzerButton'
-import ActiveClipPlayer from '../components/broadcast/ActiveClipPlayer'
-import LoadingScreen from '../components/LoadingScreen'
-import PagePlaceholder from '../components/PagePlaceholder'
+import { getRoomByCode, type Room } from '@/features/rooms/rooms'
+import { errorMessage } from '@/lib/errors'
+import { useAuthStore } from '@/features/auth/authStore'
+import { useQuizStore } from '@/store/quizStore'
+import Scoreboard from '@/components/ui/Scoreboard'
+import BuzzerButton from '@/features/buzzer/BuzzerButton'
+import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
+import LoadingScreen from '@/components/ui/LoadingScreen'
+import PagePlaceholder from '@/components/ui/PagePlaceholder'
 
 export default function CandidatePlayPage() {
   const { roomCode } = useParams<{ roomCode: string }>()

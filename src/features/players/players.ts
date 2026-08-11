@@ -1,5 +1,5 @@
-import { supabase } from './supabaseClient'
-import type { PlayerRow } from '../store/quizStore'
+import { supabase } from '@/lib/supabaseClient'
+import type { PlayerRow } from '@/store/quizStore'
 
 export async function joinRoom(roomId: string, userId: string, displayName: string): Promise<PlayerRow> {
   const { data, error } = await supabase

@@ -1,4 +1,4 @@
-import type { PlayerRow } from '../store/quizStore'
+import type { PlayerRow } from '@/store/quizStore'
 
 export default function Scoreboard({
   players,

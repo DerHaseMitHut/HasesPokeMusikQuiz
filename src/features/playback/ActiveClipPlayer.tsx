@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { useQuizStore, type PlaybackStateRow } from '../../store/quizStore'
-import { getClipPublicUrl, getSongPublic } from '../../lib/songs'
-import { getServerOffsetMs, expectedPositionSeconds } from '../../lib/playbackSync'
+import { useQuizStore, type PlaybackStateRow } from '@/store/quizStore'
+import { getClipPublicUrl, getSongPublic } from '@/features/songs/songs'
+import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
 
 const DRIFT_HARD_SEEK_SECONDS = 0.75
 const DRIFT_SOFT_SECONDS = 0.05

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getRoomByCode, type Room } from '../lib/rooms'
-import { listSongsForRoom, type Song } from '../lib/songs'
-import { errorMessage } from '../lib/errors'
-import SongUploadForm from '../components/SongUploadForm'
-import SongList from '../components/SongList'
-import LoadingScreen from '../components/LoadingScreen'
-import PagePlaceholder from '../components/PagePlaceholder'
+import { getRoomByCode, type Room } from '@/features/rooms/rooms'
+import { listSongsForRoom, type Song } from '@/features/songs/songs'
+import { errorMessage } from '@/lib/errors'
+import SongUploadForm from '@/features/songs/SongUploadForm'
+import SongList from '@/features/songs/SongList'
+import LoadingScreen from '@/components/ui/LoadingScreen'
+import PagePlaceholder from '@/components/ui/PagePlaceholder'
 
 export default function HostRoomSetupPage() {
   const { roomCode } = useParams<{ roomCode: string }>()

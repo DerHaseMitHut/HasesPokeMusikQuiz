@@ -1,4 +1,4 @@
-import { deleteSong, swapSongOrder, type Song } from '../lib/songs'
+import { deleteSong, swapSongOrder, type Song } from './songs'
 
 export default function SongList({
   songs,

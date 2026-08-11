@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { ensureAnonymousSession, isCurrentUserHost } from '../lib/auth'
-import { errorMessage } from '../lib/errors'
+import { ensureAnonymousSession, isCurrentUserHost } from './auth'
+import { errorMessage } from '@/lib/errors'
 
 interface AuthState {
   userId: string | null

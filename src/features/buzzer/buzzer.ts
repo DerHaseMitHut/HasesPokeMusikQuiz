@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 
 export async function openBuzzer(roomId: string, currentSongId: string | null): Promise<void> {
   const { error } = await supabase

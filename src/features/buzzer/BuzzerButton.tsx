@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { pressBuzzer } from '../lib/buzzer'
-import { errorMessage } from '../lib/errors'
-import { useQuizStore } from '../store/quizStore'
+import { pressBuzzer } from './buzzer'
+import { errorMessage } from '@/lib/errors'
+import { useQuizStore } from '@/store/quizStore'
 
 export default function BuzzerButton({ roomId, playerId }: { roomId: string; playerId: string }) {
   const buzzerState = useQuizStore((s) => s.buzzerState)

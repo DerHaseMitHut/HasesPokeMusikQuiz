@@ -1,5 +1,5 @@
-import { supabase } from './supabaseClient'
-import type { PlaybackStateRow } from '../store/quizStore'
+import { supabase } from '@/lib/supabaseClient'
+import type { PlaybackStateRow } from '@/store/quizStore'
 
 let cachedOffsetMs = 0
 let offsetFetchedAt = 0

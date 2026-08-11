@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { createRoom, listRooms, type Room } from '../lib/rooms'
-import { useAuthStore } from '../store/authStore'
-import { errorMessage } from '../lib/errors'
-import LoadingScreen from '../components/LoadingScreen'
+import { createRoom, listRooms, type Room } from '@/features/rooms/rooms'
+import { useAuthStore } from '@/features/auth/authStore'
+import { errorMessage } from '@/lib/errors'
+import LoadingScreen from '@/components/ui/LoadingScreen'
 
 export default function HostRoomListPage() {
   const userId = useAuthStore((s) => s.userId)

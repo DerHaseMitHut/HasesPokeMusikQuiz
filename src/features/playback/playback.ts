@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 
 export async function loadSong(roomId: string, songId: string): Promise<void> {
   const { error } = await supabase

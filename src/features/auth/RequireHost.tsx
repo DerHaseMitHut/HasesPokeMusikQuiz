@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom'
-import { useAuthStore } from '../store/authStore'
-import LoadingScreen from './LoadingScreen'
+import { useAuthStore } from './authStore'
+import LoadingScreen from '@/components/ui/LoadingScreen'
 
 export default function RequireHost({ children }: { children: React.ReactNode }) {
   const { ready, isHost } = useAuthStore()

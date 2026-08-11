@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { getRoomByCode } from '../lib/rooms'
-import { joinRoom } from '../lib/players'
-import { errorMessage } from '../lib/errors'
-import { useAuthStore } from '../store/authStore'
+import { getRoomByCode } from '@/features/rooms/rooms'
+import { joinRoom } from '@/features/players/players'
+import { errorMessage } from '@/lib/errors'
+import { useAuthStore } from '@/features/auth/authStore'
 
 export default function CandidateJoinPage() {
   const [searchParams] = useSearchParams()

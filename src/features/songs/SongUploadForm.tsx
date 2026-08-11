@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { createSong, uploadClip } from '../lib/songs'
-import { errorMessage } from '../lib/errors'
+import { createSong, uploadClip } from './songs'
+import { errorMessage } from '@/lib/errors'
 
 export default function SongUploadForm({
   roomId,

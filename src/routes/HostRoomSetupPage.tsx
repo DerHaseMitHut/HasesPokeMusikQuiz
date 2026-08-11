@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { getRoomByCode, type Room } from '../lib/rooms'
 import { listSongsForRoom, type Song } from '../lib/songs'
 import { errorMessage } from '../lib/errors'
@@ -37,12 +37,20 @@ export default function HostRoomSetupPage() {
 
   return (
     <div className="min-h-screen px-6 py-12 max-w-3xl mx-auto flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-3xl font-700">{room.name}</h1>
-        <p className="text-white/60 mt-1">
-          Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
-        </p>
-        <p className="text-white/40 text-sm mt-1 break-all">Beitritts-Link: {joinUrl}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-700">{room.name}</h1>
+          <p className="text-white/60 mt-1">
+            Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
+          </p>
+          <p className="text-white/40 text-sm mt-1 break-all">Beitritts-Link: {joinUrl}</p>
+        </div>
+        <Link
+          to={`/host/${room.code}/live`}
+          className="shrink-0 font-display font-700 rounded-xl bg-poke-blue-600 hover:bg-poke-blue-500 transition-colors px-5 py-3"
+        >
+          Live →
+        </Link>
       </div>
 
       <SongUploadForm roomId={room.id} nextOrderIndex={songs.length} onCreated={reload} />

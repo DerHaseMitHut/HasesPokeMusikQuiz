@@ -40,6 +40,13 @@ interface QuizState {
   disconnect: () => void
 }
 
+// Modul-weiter (nicht Store-)Zustand, damit ein doppelter connect()-Aufruf für denselben
+// Raum dedupliziert wird — React StrictMode ruft Effects im Dev-Modus zweimal auf, und ohne
+// dieses Guard würde der zweite Aufruf versuchen, Listener an einen Channel zu hängen, der
+// vom ersten (noch laufenden) Aufruf bereits subscribed wurde. Supabase erlaubt das nicht
+// ("cannot add postgres_changes callbacks ... after subscribe()").
+let inFlight: { roomId: string; promise: Promise<void> } | null = null
+
 export const useQuizStore = create<QuizState>((set, get) => ({
   roomId: null,
   players: [],
@@ -50,51 +57,63 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   connect: async (roomId) => {
     const current = get()
     if (current.roomId === roomId && current.channel) return
-    current.channel?.unsubscribe()
+    if (inFlight?.roomId === roomId) return inFlight.promise
 
-    const [playersRes, playbackRes, buzzerRes] = await Promise.all([
-      supabase.from('players').select('*').eq('room_id', roomId).order('joined_at', { ascending: true }),
-      supabase.from('playback_state').select('*').eq('room_id', roomId).maybeSingle(),
-      supabase.from('buzzer_state').select('*').eq('room_id', roomId).maybeSingle(),
-    ])
+    if (current.channel) supabase.removeChannel(current.channel)
 
-    set({
-      roomId,
-      players: playersRes.data ?? [],
-      playbackState: playbackRes.data ?? null,
-      buzzerState: buzzerRes.data ?? null,
-    })
+    const promise = (async () => {
+      const [playersRes, playbackRes, buzzerRes] = await Promise.all([
+        supabase.from('players').select('*').eq('room_id', roomId).order('joined_at', { ascending: true }),
+        supabase.from('playback_state').select('*').eq('room_id', roomId).maybeSingle(),
+        supabase.from('buzzer_state').select('*').eq('room_id', roomId).maybeSingle(),
+      ])
 
-    const channel = supabase
-      .channel(`room-${roomId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
-        (payload: RealtimePostgresChangesPayload<PlayerRow>) => {
-          set((state) => ({ players: applyChange(state.players, payload, (p) => p.id) }))
-        },
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'playback_state', filter: `room_id=eq.${roomId}` },
-        (payload: RealtimePostgresChangesPayload<PlaybackStateRow>) => {
-          if (payload.eventType !== 'DELETE') set({ playbackState: payload.new as PlaybackStateRow })
-        },
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'buzzer_state', filter: `room_id=eq.${roomId}` },
-        (payload: RealtimePostgresChangesPayload<BuzzerStateRow>) => {
-          if (payload.eventType !== 'DELETE') set({ buzzerState: payload.new as BuzzerStateRow })
-        },
-      )
-      .subscribe()
+      set({
+        roomId,
+        players: playersRes.data ?? [],
+        playbackState: playbackRes.data ?? null,
+        buzzerState: buzzerRes.data ?? null,
+      })
 
-    set({ channel })
+      const channel = supabase
+        .channel(`room-${roomId}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
+          (payload: RealtimePostgresChangesPayload<PlayerRow>) => {
+            set((state) => ({ players: applyChange(state.players, payload, (p) => p.id) }))
+          },
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'playback_state', filter: `room_id=eq.${roomId}` },
+          (payload: RealtimePostgresChangesPayload<PlaybackStateRow>) => {
+            if (payload.eventType !== 'DELETE') set({ playbackState: payload.new as PlaybackStateRow })
+          },
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'buzzer_state', filter: `room_id=eq.${roomId}` },
+          (payload: RealtimePostgresChangesPayload<BuzzerStateRow>) => {
+            if (payload.eventType !== 'DELETE') set({ buzzerState: payload.new as BuzzerStateRow })
+          },
+        )
+        .subscribe()
+
+      set({ channel })
+    })()
+
+    inFlight = { roomId, promise }
+    try {
+      await promise
+    } finally {
+      if (inFlight?.roomId === roomId) inFlight = null
+    }
   },
 
   disconnect: () => {
-    get().channel?.unsubscribe()
+    const { channel } = get()
+    if (channel) supabase.removeChannel(channel)
     set({ roomId: null, players: [], playbackState: null, buzzerState: null, channel: null })
   },
 }))

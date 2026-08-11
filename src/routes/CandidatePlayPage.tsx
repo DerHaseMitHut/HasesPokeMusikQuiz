@@ -15,6 +15,7 @@ export default function CandidatePlayPage() {
   const [error, setError] = useState<string | null>(null)
 
   const { players, connect, disconnect } = useQuizStore()
+  const [playersLoaded, setPlayersLoaded] = useState(false)
 
   useEffect(() => {
     if (!roomCode) return
@@ -25,13 +26,24 @@ export default function CandidatePlayPage() {
 
   useEffect(() => {
     if (!room) return
+    let cancelled = false
     connect(room.id)
-    return () => disconnect()
+      .then(() => {
+        if (!cancelled) setPlayersLoaded(true)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(errorMessage(err, 'Verbindung zum Raum fehlgeschlagen.'))
+      })
+    return () => {
+      cancelled = true
+      disconnect()
+    }
   }, [room, connect, disconnect])
 
   if (error) return <PagePlaceholder title="Fehler" note={error} />
   if (room === undefined) return <LoadingScreen />
   if (room === null) return <PagePlaceholder title="Raum nicht gefunden" note={`Kein Raum mit Code „${roomCode}“.`} />
+  if (!playersLoaded) return <LoadingScreen />
 
   const myPlayer = players.find((p) => p.user_id === userId)
   if (!myPlayer) return <Navigate to={`/join?code=${room.code}`} replace />

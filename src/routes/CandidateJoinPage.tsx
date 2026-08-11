@@ -16,7 +16,19 @@ export default function CandidateJoinPage() {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (!userId || code.trim().length === 0 || name.trim().length === 0) return
+
+    if (code.trim().length === 0) {
+      setError('Bitte gib den Raumcode ein.')
+      return
+    }
+    if (name.trim().length === 0) {
+      setError('Bitte gib deinen Namen ein.')
+      return
+    }
+    if (!userId) {
+      setError('Anmeldung läuft noch, bitte kurz warten und erneut versuchen.')
+      return
+    }
 
     setSubmitting(true)
     setError(null)
@@ -67,7 +79,7 @@ export default function CandidateJoinPage() {
 
         <button
           type="submit"
-          disabled={submitting || code.trim().length === 0 || name.trim().length === 0}
+          disabled={submitting}
           className="font-display font-700 rounded-xl bg-poke-blue-600 hover:bg-poke-blue-500 disabled:opacity-50 transition-colors py-3"
         >
           {submitting ? 'Trete bei…' : 'Beitreten'}

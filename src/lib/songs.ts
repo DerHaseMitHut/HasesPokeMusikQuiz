@@ -18,6 +18,19 @@ export type NewSong = Pick<
   'room_id' | 'order_index' | 'title' | 'correct_answer' | 'points' | 'riddle_storage_path' | 'solution_storage_path'
 >
 
+// Spiegelt die songs_public-View: Titel/Lösung/Lösungs-Clip sind null, solange revealed=false.
+export interface SongPublic {
+  id: string
+  room_id: string
+  order_index: number
+  points: number
+  riddle_storage_path: string
+  revealed: boolean
+  title: string | null
+  correct_answer: string | null
+  solution_storage_path: string | null
+}
+
 const BUCKET = 'song-videos'
 
 export async function listSongsForRoom(roomId: string): Promise<Song[]> {
@@ -47,6 +60,12 @@ export async function uploadClip(
 
 export function getClipPublicUrl(storagePath: string): string {
   return supabase.storage.from(BUCKET).getPublicUrl(storagePath).data.publicUrl
+}
+
+export async function getSongPublic(songId: string): Promise<SongPublic | null> {
+  const { data, error } = await supabase.from('songs_public').select('*').eq('id', songId).maybeSingle()
+  if (error) throw error
+  return data
 }
 
 export async function createSong(song: NewSong): Promise<Song> {

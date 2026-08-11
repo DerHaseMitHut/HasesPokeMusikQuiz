@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { LiveKitRoom } from '@livekit/components-react'
 import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { listSongsForRoom, type Song } from '@/features/songs/songs'
 import { errorMessage } from '@/lib/errors'
@@ -7,6 +8,8 @@ import { closeBuzzer, openBuzzer, resolveBuzzer } from '@/features/buzzer/buzzer
 import { awardPoints } from '@/features/players/players'
 import { loadSong, setPlaying, showSolution } from '@/features/playback/playback'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
+import { useLiveKitToken } from '@/features/video/useLiveKitToken'
+import CamGrid from '@/features/video/CamGrid'
 import { useQuizStore } from '@/store/quizStore'
 import Scoreboard from '@/components/ui/Scoreboard'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
@@ -21,6 +24,7 @@ export default function HostLivePage() {
   const [busy, setBusy] = useState(false)
 
   const { players, playbackState, buzzerState, connect, disconnect } = useQuizStore()
+  const { token: videoToken, url: videoUrl } = useLiveKitToken(room?.code, 'host')
 
   useEffect(() => {
     if (!roomCode) return
@@ -152,13 +156,19 @@ export default function HostLivePage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-10 max-w-2xl mx-auto flex flex-col gap-8">
+    <div className="min-h-screen px-6 py-10 max-w-4xl mx-auto flex flex-col gap-8">
       <div>
         <h1 className="font-display text-2xl font-700">{room.name}</h1>
         <p className="text-white/50 text-sm mt-1">
           Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
         </p>
       </div>
+
+      {videoToken && videoUrl && (
+        <LiveKitRoom serverUrl={videoUrl} token={videoToken} video audio={false} connect>
+          <CamGrid players={players} includeHost={false} winnerPlayerId={buzzerState?.winner_player_id} />
+        </LiveKitRoom>
+      )}
 
       <ActiveClipPlayer />
 

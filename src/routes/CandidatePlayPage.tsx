@@ -5,6 +5,7 @@ import { errorMessage } from '../lib/errors'
 import { useAuthStore } from '../store/authStore'
 import { useQuizStore } from '../store/quizStore'
 import Scoreboard from '../components/Scoreboard'
+import BuzzerButton from '../components/BuzzerButton'
 import LoadingScreen from '../components/LoadingScreen'
 import PagePlaceholder from '../components/PagePlaceholder'
 
@@ -58,7 +59,11 @@ export default function CandidatePlayPage() {
       </div>
 
       <div className="rounded-2xl bg-stage-800 border border-stage-600 p-6 text-center text-white/50">
-        Video &amp; Buzzer folgen in Kürze.
+        Video folgt in Kürze.
+      </div>
+
+      <div className="flex justify-center">
+        <BuzzerButton roomId={room.id} playerId={myPlayer.id} />
       </div>
 
       <div>

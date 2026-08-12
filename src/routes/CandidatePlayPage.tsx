@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
+import { LiveKitRoom } from '@livekit/components-react'
 import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { errorMessage } from '@/lib/errors'
 import { useAuthStore } from '@/features/auth/authStore'
 import { useQuizStore } from '@/store/quizStore'
+import { useLiveKitToken } from '@/features/video/useLiveKitToken'
+import CamGrid from '@/features/video/CamGrid'
 import Scoreboard from '@/components/ui/Scoreboard'
 import BuzzerButton from '@/features/buzzer/BuzzerButton'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
@@ -18,6 +21,7 @@ export default function CandidatePlayPage() {
 
   const { players, connect, disconnect } = useQuizStore()
   const [playersLoaded, setPlayersLoaded] = useState(false)
+  const { token: videoToken, url: videoUrl } = useLiveKitToken(room?.code, 'player')
 
   useEffect(() => {
     if (!roomCode) return
@@ -58,6 +62,12 @@ export default function CandidatePlayPage() {
           Angemeldet als <span className="text-poke-yellow-400 font-700">{myPlayer.display_name}</span>
         </p>
       </div>
+
+      {videoToken && videoUrl && (
+        <LiveKitRoom serverUrl={videoUrl} token={videoToken} video audio={false} connect>
+          <CamGrid players={players} includeHost onlyIdentities={[myPlayer.id]} />
+        </LiveKitRoom>
+      )}
 
       <ActiveClipPlayer />
 

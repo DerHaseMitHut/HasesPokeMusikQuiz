@@ -1,6 +1,11 @@
 import type { Context } from '@netlify/functions'
 import { createClient } from '@supabase/supabase-js'
 import { AccessToken, TrackSource } from 'livekit-server-sdk'
+// netlify dev injiziert .env-Werte in den Vite-Prozess und die CLI selbst, aber nicht
+// zuverlässig in den Function-Worker (deployEnvironment ist für ungelinkte Projekte leer).
+// dotenv füllt process.env hier lokal auf; im echten Deploy existiert keine .env-Datei,
+// dort liefert Netlify die Variablen ohnehin direkt über process.env.
+import 'dotenv/config'
 
 type Role = 'host' | 'player' | 'obs'
 

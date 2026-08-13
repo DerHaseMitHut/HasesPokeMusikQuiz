@@ -4,7 +4,7 @@ import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { listSongsForRoom, type Song } from '@/features/songs/songs'
 import { errorMessage } from '@/lib/errors'
 import { closeBuzzer, openBuzzer, resolveBuzzer } from '@/features/buzzer/buzzer'
-import { awardPoints } from '@/features/players/players'
+import { awardPoints, kickPlayer } from '@/features/players/players'
 import { loadSong, setPlaying, showSolution } from '@/features/playback/playback'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
 import { useQuizStore } from '@/store/quizStore'
@@ -152,6 +152,19 @@ export default function HostLivePage() {
     }
   }
 
+  async function handleKick(playerId: string, displayName: string) {
+    if (!window.confirm(`${displayName} aus dem Raum entfernen?`)) return
+    setBusy(true)
+    setError(null)
+    try {
+      await kickPlayer(playerId)
+    } catch (err) {
+      setError(errorMessage(err, 'Kandidat konnte nicht entfernt werden.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="min-h-screen px-6 py-10 max-w-4xl mx-auto flex flex-col gap-8">
       <div>
@@ -162,6 +175,7 @@ export default function HostLivePage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" />
         {players.map((player) => (
           <CamTile
             key={player.id}
@@ -169,6 +183,7 @@ export default function HostLivePage() {
             label={player.display_name}
             score={player.score}
             highlighted={player.id === buzzerState?.winner_player_id}
+            onKick={() => handleKick(player.id, player.display_name)}
           />
         ))}
       </div>

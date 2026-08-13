@@ -28,3 +28,8 @@ export async function awardPoints(playerId: string, points: number): Promise<voi
   const { error } = await supabase.rpc('award_points', { player_id: playerId, points })
   if (error) throw error
 }
+
+export async function kickPlayer(playerId: string): Promise<void> {
+  const { error } = await supabase.from('players').delete().eq('id', playerId)
+  if (error) throw error
+}

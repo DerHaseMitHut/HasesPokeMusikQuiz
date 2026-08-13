@@ -74,13 +74,13 @@ export default function ActiveClipPlayer() {
   }
 
   return (
-    <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden flex items-center justify-center">
+    <div className="w-full h-full bg-black rounded-2xl overflow-hidden flex items-center justify-center">
       {clipUrl ? (
         <video
           key={clipUrl}
           ref={videoRef}
           src={clipUrl}
-          className="w-full h-full"
+          className="w-full h-full object-contain"
           playsInline
           onLoadedMetadata={handleLoadedMetadata}
         />

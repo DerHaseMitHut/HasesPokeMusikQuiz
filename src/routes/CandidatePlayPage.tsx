@@ -6,7 +6,6 @@ import { useAuthStore } from '@/features/auth/authStore'
 import { useQuizStore } from '@/store/quizStore'
 import { updatePlayerVdoUrl } from '@/features/players/players'
 import CamTile from '@/components/ui/CamTile'
-import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Scoreboard from '@/components/ui/Scoreboard'
 import BuzzerButton from '@/features/buzzer/BuzzerButton'
@@ -23,6 +22,7 @@ export default function CandidatePlayPage() {
   const { players, connect, disconnect } = useQuizStore()
   const [playersLoaded, setPlayersLoaded] = useState(false)
   const vdoUrlInputRef = useRef<HTMLInputElement>(null)
+  const [editingVdoUrl, setEditingVdoUrl] = useState(false)
   const [savingVdoUrl, setSavingVdoUrl] = useState(false)
   const [vdoUrlError, setVdoUrlError] = useState<string | null>(null)
 
@@ -64,6 +64,7 @@ export default function CandidatePlayPage() {
     setVdoUrlError(null)
     try {
       await updatePlayerVdoUrl(myPlayer.id, vdoUrlInputRef.current?.value.trim() ?? '')
+      setEditingVdoUrl(false)
     } catch (err) {
       setVdoUrlError(errorMessage(err, 'Kamera-Link konnte nicht gespeichert werden.'))
     } finally {
@@ -72,15 +73,45 @@ export default function CandidatePlayPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-10 max-w-3xl mx-auto flex flex-col gap-8">
-      <div className="text-center">
-        <h1 className="font-display text-3xl font-800 drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">{room.name}</h1>
-        <p className="text-white/50 text-sm mt-1">
-          Angemeldet als <span className="text-poke-yellow-400 font-700">{myPlayer.display_name}</span>
+    <div className="h-screen w-screen flex flex-col overflow-hidden p-3 sm:p-4 gap-2 sm:gap-3">
+      <div className="flex items-center justify-between shrink-0">
+        <div>
+          <h1 className="font-display text-lg sm:text-xl font-800 leading-tight">{room.name}</h1>
+          <p className="text-white/50 text-xs">
+            Angemeldet als <span className="text-poke-yellow-400 font-700">{myPlayer.display_name}</span>
+            {' · '}
+            <button type="button" onClick={() => setEditingVdoUrl((v) => !v)} className="underline hover:text-white/80">
+              Kamera-Link
+            </button>
+          </p>
+        </div>
+        <p className="text-white/40 text-xs shrink-0">
+          Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {editingVdoUrl && (
+        <form onSubmit={handleSaveVdoUrl} className="shrink-0 flex gap-2 items-start">
+          <div className="flex-1 flex flex-col gap-1">
+            <input
+              ref={vdoUrlInputRef}
+              autoFocus
+              defaultValue={myPlayer.vdo_url ?? ''}
+              placeholder="Dein Kamera-Link"
+              className="w-full rounded-lg bg-stage-900/80 border border-stage-600 px-3 py-1.5 text-sm outline-none focus:border-poke-yellow-400 focus:shadow-[0_0_0_3px_rgba(255,203,5,0.15)] transition-shadow"
+            />
+            {vdoUrlError && <p className="text-poke-red-400 text-xs">{vdoUrlError}</p>}
+          </div>
+          <Button type="submit" variant="ghost" size="sm" disabled={savingVdoUrl} className="shrink-0">
+            {savingVdoUrl ? '…' : 'Speichern'}
+          </Button>
+        </form>
+      )}
+
+      <div
+        className="grid gap-2 sm:gap-3 shrink-0"
+        style={{ height: '22vh', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}
+      >
         <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
         {players.map((player) => (
           <CamTile
@@ -92,31 +123,20 @@ export default function CandidatePlayPage() {
         ))}
       </div>
 
-      <Card>
-        <form onSubmit={handleSaveVdoUrl} className="p-4 flex gap-2">
-          <input
-            ref={vdoUrlInputRef}
-            key={myPlayer.vdo_url}
-            defaultValue={myPlayer.vdo_url ?? ''}
-            placeholder="Dein Kamera-Link"
-            className="flex-1 rounded-xl bg-stage-900/80 border border-stage-600 px-4 py-2 text-sm outline-none focus:border-poke-yellow-400 focus:shadow-[0_0_0_3px_rgba(255,203,5,0.15)] transition-shadow"
-          />
-          <Button type="submit" variant="ghost" size="sm" disabled={savingVdoUrl} className="shrink-0">
-            {savingVdoUrl ? '…' : 'Speichern'}
-          </Button>
-        </form>
-        {vdoUrlError && <p className="text-poke-red-400 text-sm px-4 pb-4">{vdoUrlError}</p>}
-      </Card>
+      <div className="flex-1 flex gap-2 sm:gap-3 min-h-0">
+        <div className="flex-[2] flex flex-col gap-2 sm:gap-3 min-h-0">
+          <div className="flex-1 min-h-0">
+            <ActiveClipPlayer />
+          </div>
+          <div className="shrink-0 flex justify-center">
+            <BuzzerButton roomId={room.id} playerId={myPlayer.id} />
+          </div>
+        </div>
 
-      <ActiveClipPlayer />
-
-      <div className="flex justify-center">
-        <BuzzerButton roomId={room.id} playerId={myPlayer.id} />
-      </div>
-
-      <div>
-        <h2 className="font-display text-lg font-700 mb-3">Punktestand</h2>
-        <Scoreboard players={players} highlightPlayerId={myPlayer.id} />
+        <div className="w-56 sm:w-64 shrink-0 min-h-0 flex flex-col gap-2 overflow-y-auto">
+          <h2 className="font-display text-sm font-700 text-white/70 shrink-0">Punktestand</h2>
+          <Scoreboard players={players} highlightPlayerId={myPlayer.id} />
+        </div>
       </div>
     </div>
   )

@@ -17,7 +17,7 @@ export default function CamTile({
 
   return (
     <div
-      className={`relative aspect-video rounded-xl overflow-hidden bg-stage-900 border transition-shadow duration-300 ${
+      className={`relative w-full h-full rounded-xl overflow-hidden bg-stage-900 border transition-shadow duration-300 ${
         highlighted ? 'border-poke-yellow-400 shadow-[var(--shadow-glow-yellow)]' : 'border-stage-600'
       }`}
     >

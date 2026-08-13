@@ -45,10 +45,10 @@ export default function ObsView() {
         <span className="text-white/40 text-sm">— {room.name}</span>
       </div>
 
-      <div className="shrink-0">
-        <MusicStaff className="h-6 w-full -mb-1" />
+      <div className="shrink-0 relative">
+        <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 w-full pointer-events-none" />
         <div
-          className="grid gap-2 justify-center"
+          className="relative grid gap-2 justify-center"
           style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 300px))' }}
         >
           <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />

@@ -180,11 +180,11 @@ export default function HostLivePage() {
         </p>
       </div>
 
-      <div className="shrink-0">
-        <MusicStaff className="h-5 w-full -mb-1" />
+      <div className="shrink-0 relative">
+        <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 w-full pointer-events-none" />
         <div
-          className="grid gap-2 sm:gap-3 justify-center"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 190px))' }}
+          className="relative grid gap-2 sm:gap-3 justify-center"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 250px))' }}
         >
           <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" />
           {players.map((player) => (
@@ -202,7 +202,7 @@ export default function HostLivePage() {
 
       <div className="flex-1 flex gap-2 sm:gap-3 min-h-0">
         <div className="flex-[2] min-w-0 flex flex-col gap-2 sm:gap-3 min-h-0">
-          <div className="flex-[3] min-h-0 min-w-0">
+          <div className="flex-1 min-h-0 min-w-0 max-h-[36vh]">
             <ActiveClipPlayer />
           </div>
 

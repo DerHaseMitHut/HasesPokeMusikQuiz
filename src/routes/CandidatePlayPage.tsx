@@ -109,11 +109,11 @@ export default function CandidatePlayPage() {
         </form>
       )}
 
-      <div className="shrink-0">
-        <MusicStaff className="h-6 w-full -mb-1" />
+      <div className="shrink-0 relative">
+        <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 w-full pointer-events-none" />
         <div
-          className="grid gap-2 sm:gap-3 justify-center"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 220px))' }}
+          className="relative grid gap-3 sm:gap-4 justify-center"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 280px))' }}
         >
           <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
           {players.map((player) => (
@@ -129,7 +129,7 @@ export default function CandidatePlayPage() {
 
       <div className="flex-1 flex gap-2 sm:gap-3 min-h-0">
         <div className="flex-[2] min-w-0 flex flex-col gap-2 sm:gap-3 min-h-0">
-          <div className="flex-1 min-h-0 min-w-0">
+          <div className="flex-1 min-h-0 min-w-0 max-h-[50vh]">
             <ActiveClipPlayer />
           </div>
           <div className="shrink-0 flex justify-center">

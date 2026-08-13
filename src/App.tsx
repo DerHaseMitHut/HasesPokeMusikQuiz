@@ -57,7 +57,14 @@ export default function App() {
             </RequireHost>
           }
         />
-        <Route path="/obs/:roomCode" element={<ObsView />} />
+        <Route
+          path="/obs/:roomCode"
+          element={
+            <RequireHost>
+              <ObsView />
+            </RequireHost>
+          }
+        />
         <Route path="/join" element={<CandidateJoinPage />} />
         <Route path="/play/:roomCode" element={<CandidatePlayPage />} />
       </Routes>

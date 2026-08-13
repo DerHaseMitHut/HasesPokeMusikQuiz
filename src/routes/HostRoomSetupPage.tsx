@@ -36,6 +36,7 @@ export default function HostRoomSetupPage() {
   if (room === null) return <PagePlaceholder title="Raum nicht gefunden" note={`Kein Raum mit Code „${roomCode}“.`} />
 
   const joinUrl = `${window.location.origin}/join?code=${room.code}`
+  const obsUrl = `${window.location.origin}/obs/${room.code}`
 
   async function handleSaveVdoUrl(event: FormEvent) {
     event.preventDefault()
@@ -61,6 +62,7 @@ export default function HostRoomSetupPage() {
             Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
           </p>
           <p className="text-white/40 text-sm mt-1 break-all">Beitritts-Link: {joinUrl}</p>
+          <p className="text-white/40 text-sm mt-1 break-all">OBS-Link: {obsUrl}</p>
         </div>
         <Link
           to={`/host/${room.code}/live`}

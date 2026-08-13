@@ -113,7 +113,7 @@ export default function CandidatePlayPage() {
         <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 w-full pointer-events-none" />
         <div
           className="relative grid gap-3 sm:gap-4 justify-center"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 280px))' }}
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 320px))' }}
         >
           <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
           {players.map((player) => (
@@ -137,8 +137,8 @@ export default function CandidatePlayPage() {
           </div>
         </div>
 
-        <div className="w-56 sm:w-64 shrink-0 min-h-0 flex flex-col gap-2 overflow-y-auto">
-          <h2 className="font-display text-sm font-700 text-white/70 shrink-0">Punktestand</h2>
+        <div className="w-72 sm:w-80 shrink-0 min-h-0 flex flex-col gap-2 overflow-y-auto">
+          <h2 className="font-display text-base font-700 text-white/70 shrink-0">Punktestand</h2>
           <Scoreboard players={players} highlightPlayerId={myPlayer.id} />
         </div>
       </div>

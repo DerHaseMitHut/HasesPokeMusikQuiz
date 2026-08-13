@@ -49,7 +49,7 @@ export default function ObsView() {
         <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 w-full pointer-events-none" />
         <div
           className="relative grid gap-2 justify-center"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 300px))' }}
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 340px))' }}
         >
           <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
           {sorted.map((player) => (

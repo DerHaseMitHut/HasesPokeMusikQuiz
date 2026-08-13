@@ -5,6 +5,7 @@ export interface Room {
   code: string
   name: string
   host_user_id: string
+  vdo_url: string | null
   created_at: string
 }
 
@@ -40,6 +41,11 @@ export async function getRoomByCode(code: string): Promise<Room | null> {
 
 export async function deleteRoom(roomId: string): Promise<void> {
   const { error } = await supabase.from('rooms').delete().eq('id', roomId)
+  if (error) throw error
+}
+
+export async function updateRoomVdoUrl(roomId: string, vdoUrl: string): Promise<void> {
+  const { error } = await supabase.from('rooms').update({ vdo_url: vdoUrl || null }).eq('id', roomId)
   if (error) throw error
 }
 

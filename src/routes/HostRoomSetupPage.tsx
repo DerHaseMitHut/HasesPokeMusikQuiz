@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getRoomByCode, type Room } from '@/features/rooms/rooms'
+import { getRoomByCode, updateRoomVdoUrl, type Room } from '@/features/rooms/rooms'
 import { listSongsForRoom, type Song } from '@/features/songs/songs'
 import { errorMessage } from '@/lib/errors'
 import SongUploadForm from '@/features/songs/SongUploadForm'
@@ -13,6 +13,8 @@ export default function HostRoomSetupPage() {
   const [room, setRoom] = useState<Room | null | undefined>(undefined)
   const [songs, setSongs] = useState<Song[]>([])
   const [error, setError] = useState<string | null>(null)
+  const vdoUrlInputRef = useRef<HTMLInputElement>(null)
+  const [savingVdoUrl, setSavingVdoUrl] = useState(false)
 
   const reload = useCallback(async () => {
     if (!roomCode) return
@@ -35,6 +37,21 @@ export default function HostRoomSetupPage() {
 
   const joinUrl = `${window.location.origin}/join?code=${room.code}`
 
+  async function handleSaveVdoUrl(event: FormEvent) {
+    event.preventDefault()
+    if (!room) return
+    setSavingVdoUrl(true)
+    setError(null)
+    try {
+      await updateRoomVdoUrl(room.id, vdoUrlInputRef.current?.value.trim() ?? '')
+      await reload()
+    } catch (err) {
+      setError(errorMessage(err, 'Kamera-Link konnte nicht gespeichert werden.'))
+    } finally {
+      setSavingVdoUrl(false)
+    }
+  }
+
   return (
     <div className="min-h-screen px-6 py-12 max-w-3xl mx-auto flex flex-col gap-8">
       <div className="flex items-start justify-between gap-4">
@@ -52,6 +69,26 @@ export default function HostRoomSetupPage() {
           Live →
         </Link>
       </div>
+
+      <form onSubmit={handleSaveVdoUrl} className="rounded-2xl bg-stage-800 border border-stage-600 p-6 flex flex-col gap-3">
+        <h2 className="font-display text-lg font-700">Deine Kamera</h2>
+        <div className="flex gap-2">
+          <input
+            ref={vdoUrlInputRef}
+            key={room.vdo_url}
+            defaultValue={room.vdo_url ?? ''}
+            placeholder="Dein VDO.Ninja-Link"
+            className="flex-1 rounded-xl bg-stage-900 border border-stage-600 px-4 py-2 text-sm outline-none focus:border-poke-yellow-400"
+          />
+          <button
+            type="submit"
+            disabled={savingVdoUrl}
+            className="rounded-xl bg-stage-700 hover:bg-stage-600 disabled:opacity-50 px-4 py-2 text-sm transition-colors shrink-0"
+          >
+            {savingVdoUrl ? '…' : 'Speichern'}
+          </button>
+        </div>
+      </form>
 
       <SongUploadForm roomId={room.id} nextOrderIndex={songs.length} onCreated={reload} />
 

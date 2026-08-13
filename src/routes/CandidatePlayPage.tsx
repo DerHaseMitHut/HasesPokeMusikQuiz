@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import { LiveKitRoom } from '@livekit/components-react'
 import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { errorMessage } from '@/lib/errors'
 import { useAuthStore } from '@/features/auth/authStore'
 import { useQuizStore } from '@/store/quizStore'
-import { useLiveKitToken } from '@/features/video/useLiveKitToken'
-import CamGrid from '@/features/video/CamGrid'
+import { updatePlayerVdoUrl } from '@/features/players/players'
+import CamTile from '@/components/ui/CamTile'
 import Scoreboard from '@/components/ui/Scoreboard'
 import BuzzerButton from '@/features/buzzer/BuzzerButton'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
@@ -21,8 +20,8 @@ export default function CandidatePlayPage() {
 
   const { players, connect, disconnect } = useQuizStore()
   const [playersLoaded, setPlayersLoaded] = useState(false)
-  const { token: videoToken, url: videoUrl, error: tokenError } = useLiveKitToken(room?.code, 'player')
-  const [videoError, setVideoError] = useState<string | null>(null)
+  const vdoUrlInputRef = useRef<HTMLInputElement>(null)
+  const [savingVdoUrl, setSavingVdoUrl] = useState(false)
 
   useEffect(() => {
     if (!roomCode) return
@@ -55,6 +54,20 @@ export default function CandidatePlayPage() {
   const myPlayer = players.find((p) => p.user_id === userId)
   if (!myPlayer) return <Navigate to={`/join?code=${room.code}`} replace />
 
+  async function handleSaveVdoUrl(event: FormEvent) {
+    event.preventDefault()
+    if (!myPlayer) return
+    setSavingVdoUrl(true)
+    setError(null)
+    try {
+      await updatePlayerVdoUrl(myPlayer.id, vdoUrlInputRef.current?.value.trim() ?? '')
+    } catch (err) {
+      setError(errorMessage(err, 'Kamera-Link konnte nicht gespeichert werden.'))
+    } finally {
+      setSavingVdoUrl(false)
+    }
+  }
+
   return (
     <div className="min-h-screen px-6 py-10 max-w-lg mx-auto flex flex-col gap-8">
       <div className="text-center">
@@ -64,20 +77,27 @@ export default function CandidatePlayPage() {
         </p>
       </div>
 
-      {(tokenError || videoError) && <p className="text-poke-red-400 text-sm text-center">{tokenError ?? videoError}</p>}
+      <div className="grid grid-cols-2 gap-3">
+        <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
+        <CamTile vdoUrl={myPlayer.vdo_url} label={myPlayer.display_name} score={myPlayer.score} />
+      </div>
 
-      {videoToken && videoUrl && (
-        <LiveKitRoom
-          serverUrl={videoUrl}
-          token={videoToken}
-          video
-          audio={false}
-          connect
-          onError={(err) => setVideoError(errorMessage(err, 'Kamera-Verbindung fehlgeschlagen.'))}
+      <form onSubmit={handleSaveVdoUrl} className="flex gap-2">
+        <input
+          ref={vdoUrlInputRef}
+          key={myPlayer.vdo_url}
+          defaultValue={myPlayer.vdo_url ?? ''}
+          placeholder="Dein VDO.Ninja-Link"
+          className="flex-1 rounded-xl bg-stage-800 border border-stage-600 px-4 py-2 text-sm outline-none focus:border-poke-yellow-400"
+        />
+        <button
+          type="submit"
+          disabled={savingVdoUrl}
+          className="rounded-xl bg-stage-700 hover:bg-stage-600 disabled:opacity-50 px-4 py-2 text-sm transition-colors shrink-0"
         >
-          <CamGrid players={players} includeHost onlyIdentities={[myPlayer.id]} />
-        </LiveKitRoom>
-      )}
+          {savingVdoUrl ? '…' : 'Speichern'}
+        </button>
+      </form>
 
       <ActiveClipPlayer />
 

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { LiveKitRoom } from '@livekit/components-react'
 import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { listSongsForRoom, type Song } from '@/features/songs/songs'
 import { errorMessage } from '@/lib/errors'
@@ -8,10 +7,9 @@ import { closeBuzzer, openBuzzer, resolveBuzzer } from '@/features/buzzer/buzzer
 import { awardPoints } from '@/features/players/players'
 import { loadSong, setPlaying, showSolution } from '@/features/playback/playback'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
-import { useLiveKitToken } from '@/features/video/useLiveKitToken'
-import CamGrid from '@/features/video/CamGrid'
 import { useQuizStore } from '@/store/quizStore'
 import Scoreboard from '@/components/ui/Scoreboard'
+import CamTile from '@/components/ui/CamTile'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import PagePlaceholder from '@/components/ui/PagePlaceholder'
@@ -24,8 +22,6 @@ export default function HostLivePage() {
   const [busy, setBusy] = useState(false)
 
   const { players, playbackState, buzzerState, connect, disconnect } = useQuizStore()
-  const { token: videoToken, url: videoUrl, error: tokenError } = useLiveKitToken(room?.code, 'host')
-  const [videoError, setVideoError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!roomCode) return
@@ -165,20 +161,17 @@ export default function HostLivePage() {
         </p>
       </div>
 
-      {(tokenError || videoError) && <p className="text-poke-red-400 text-sm">{tokenError ?? videoError}</p>}
-
-      {videoToken && videoUrl && (
-        <LiveKitRoom
-          serverUrl={videoUrl}
-          token={videoToken}
-          video
-          audio={false}
-          connect
-          onError={(err) => setVideoError(errorMessage(err, 'Kamera-Verbindung fehlgeschlagen.'))}
-        >
-          <CamGrid players={players} includeHost={false} winnerPlayerId={buzzerState?.winner_player_id} />
-        </LiveKitRoom>
-      )}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {players.map((player) => (
+          <CamTile
+            key={player.id}
+            vdoUrl={player.vdo_url}
+            label={player.display_name}
+            score={player.score}
+            highlighted={player.id === buzzerState?.winner_player_id}
+          />
+        ))}
+      </div>
 
       <ActiveClipPlayer />
 

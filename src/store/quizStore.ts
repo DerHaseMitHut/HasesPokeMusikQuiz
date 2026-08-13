@@ -8,6 +8,7 @@ export interface PlayerRow {
   user_id: string
   display_name: string
   score: number
+  vdo_url: string | null
   joined_at: string
 }
 

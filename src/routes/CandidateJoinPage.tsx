@@ -9,6 +9,7 @@ export default function CandidateJoinPage() {
   const [searchParams] = useSearchParams()
   const [code, setCode] = useState(searchParams.get('code')?.toUpperCase() ?? '')
   const [name, setName] = useState('')
+  const [vdoUrl, setVdoUrl] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -38,7 +39,7 @@ export default function CandidateJoinPage() {
         setError('Kein Raum mit diesem Code gefunden.')
         return
       }
-      await joinRoom(room.id, userId, name.trim())
+      await joinRoom(room.id, userId, name.trim(), vdoUrl.trim())
       navigate(`/play/${room.code}`)
     } catch (err) {
       setError(errorMessage(err, 'Beitritt fehlgeschlagen.'))
@@ -73,6 +74,17 @@ export default function CandidateJoinPage() {
             placeholder="Wie sollen wir dich nennen?"
             className="rounded-xl bg-stage-900 border border-stage-600 px-4 py-3 outline-none focus:border-poke-yellow-400"
           />
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm text-white/70">
+          Kamera-Link (VDO.Ninja, optional)
+          <input
+            value={vdoUrl}
+            onChange={(e) => setVdoUrl(e.target.value)}
+            placeholder="https://vdo.ninja/?push=…"
+            className="rounded-xl bg-stage-900 border border-stage-600 px-4 py-3 outline-none focus:border-poke-yellow-400"
+          />
+          <span className="text-white/40 text-xs">Kannst du auch später noch eintragen.</span>
         </label>
 
         {error && <p className="text-poke-red-400 text-sm">{error}</p>}

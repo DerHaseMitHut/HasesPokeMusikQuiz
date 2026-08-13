@@ -69,7 +69,7 @@ export default function CandidatePlayPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-10 max-w-lg mx-auto flex flex-col gap-8">
+    <div className="min-h-screen px-6 py-10 max-w-3xl mx-auto flex flex-col gap-8">
       <div className="text-center">
         <h1 className="font-display text-2xl font-700">{room.name}</h1>
         <p className="text-white/50 text-sm mt-1">
@@ -77,9 +77,16 @@ export default function CandidatePlayPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
-        <CamTile vdoUrl={myPlayer.vdo_url} label={myPlayer.display_name} score={myPlayer.score} />
+        {players.map((player) => (
+          <CamTile
+            key={player.id}
+            vdoUrl={player.vdo_url}
+            label={player.id === myPlayer.id ? `${player.display_name} (Du)` : player.display_name}
+            score={player.score}
+          />
+        ))}
       </div>
 
       <form onSubmit={handleSaveVdoUrl} className="flex gap-2">

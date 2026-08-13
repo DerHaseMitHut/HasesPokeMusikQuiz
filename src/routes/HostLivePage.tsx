@@ -11,6 +11,7 @@ import { useQuizStore } from '@/store/quizStore'
 import Scoreboard from '@/components/ui/Scoreboard'
 import CamTile from '@/components/ui/CamTile'
 import MusicStaff from '@/components/ui/MusicStaff'
+import LayoutSettingsPanel from '@/components/ui/LayoutSettingsPanel'
 import Card from '@/components/ui/Card'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -26,7 +27,7 @@ export default function HostLivePage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  const { players, playbackState, buzzerState, connect, disconnect } = useQuizStore()
+  const { players, playbackState, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
 
   useEffect(() => {
     if (!roomCode) return
@@ -172,19 +173,22 @@ export default function HostLivePage() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden p-3 sm:p-4 gap-2 sm:gap-3">
-      <div className="flex items-center justify-between shrink-0">
+      <div className="flex items-center justify-between shrink-0 gap-3">
         <h1 className="font-display text-lg sm:text-xl font-800 leading-tight">{room.name}</h1>
         {error && <p className="text-poke-red-400 text-xs">{error}</p>}
-        <p className="text-white/40 text-xs shrink-0">
-          Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
-        </p>
+        <div className="flex items-center gap-3 shrink-0">
+          <p className="text-white/40 text-xs">
+            Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
+          </p>
+          <LayoutSettingsPanel roomId={room.id} layout={roomLayout} />
+        </div>
       </div>
 
       <div className="shrink-0 relative">
         <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 w-full pointer-events-none" />
         <div
           className="relative grid gap-2 sm:gap-3 justify-center"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 320px))' }}
+          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
         >
           <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" />
           {players.map((player) => (
@@ -201,7 +205,7 @@ export default function HostLivePage() {
       </div>
 
       <div className="flex-1 flex gap-2 sm:gap-3 min-h-0">
-        <Card className="w-48 sm:w-56 shrink-0 min-h-0">
+        <Card className="shrink-0 min-h-0" style={{ width: roomLayout.sidebarWidth }}>
           <div className="p-3 flex flex-col gap-2 h-full min-h-0">
             <h2 className="font-display text-sm font-700 text-white/70 shrink-0">Songs ({songs.length})</h2>
             <ul className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1.5">
@@ -254,7 +258,7 @@ export default function HostLivePage() {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 min-w-0">
+          <div className="flex-1 min-h-0 min-w-0" style={{ maxHeight: `${roomLayout.videoMaxHeight}vh` }}>
             <ActiveClipPlayer />
           </div>
 
@@ -311,7 +315,7 @@ export default function HostLivePage() {
           </Card>
         </div>
 
-        <div className="w-72 sm:w-80 shrink-0 min-h-0 flex flex-col gap-2 overflow-y-auto">
+        <div className="shrink-0 min-h-0 flex flex-col gap-2 overflow-y-auto" style={{ width: roomLayout.scoreboardWidth }}>
           <h2 className="font-display text-base font-700 text-white/70 shrink-0">Kandidaten ({players.length})</h2>
           <Scoreboard players={players} winnerPlayerId={buzzerState?.winner_player_id} />
         </div>

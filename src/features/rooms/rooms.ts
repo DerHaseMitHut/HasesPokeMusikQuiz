@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient'
+import type { RoomLayoutSettings } from '@/store/quizStore'
 
 export interface Room {
   id: string
@@ -46,6 +47,11 @@ export async function deleteRoom(roomId: string): Promise<void> {
 
 export async function updateRoomVdoUrl(roomId: string, vdoUrl: string): Promise<void> {
   const { error } = await supabase.from('rooms').update({ vdo_url: vdoUrl || null }).eq('id', roomId)
+  if (error) throw error
+}
+
+export async function updateRoomLayout(roomId: string, layout: RoomLayoutSettings): Promise<void> {
+  const { error } = await supabase.from('rooms').update({ layout }).eq('id', roomId)
   if (error) throw error
 }
 

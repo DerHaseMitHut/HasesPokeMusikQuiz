@@ -14,7 +14,7 @@ export default function ObsView() {
   const [room, setRoom] = useState<Room | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
-  const { players, buzzerState, connect, disconnect } = useQuizStore()
+  const { players, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
 
   useEffect(() => {
     if (!roomCode) return
@@ -49,7 +49,7 @@ export default function ObsView() {
         <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 w-full pointer-events-none" />
         <div
           className="relative grid gap-2 justify-center"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 340px))' }}
+          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
         >
           <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
           {sorted.map((player) => (

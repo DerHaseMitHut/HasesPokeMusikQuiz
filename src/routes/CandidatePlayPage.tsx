@@ -20,7 +20,7 @@ export default function CandidatePlayPage() {
   const [room, setRoom] = useState<Room | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
-  const { players, connect, disconnect } = useQuizStore()
+  const { players, roomLayout, connect, disconnect } = useQuizStore()
   const [playersLoaded, setPlayersLoaded] = useState(false)
   const vdoUrlInputRef = useRef<HTMLInputElement>(null)
   const [editingVdoUrl, setEditingVdoUrl] = useState(false)
@@ -113,7 +113,7 @@ export default function CandidatePlayPage() {
         <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 w-full pointer-events-none" />
         <div
           className="relative grid gap-3 sm:gap-4 justify-center"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 320px))' }}
+          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
         >
           <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
           {players.map((player) => (
@@ -129,7 +129,7 @@ export default function CandidatePlayPage() {
 
       <div className="flex-1 flex gap-2 sm:gap-3 min-h-0">
         <div className="flex-[2] min-w-0 flex flex-col gap-2 sm:gap-3 min-h-0">
-          <div className="flex-1 min-h-0 min-w-0 max-h-[50vh]">
+          <div className="flex-1 min-h-0 min-w-0" style={{ maxHeight: `${roomLayout.videoMaxHeight}vh` }}>
             <ActiveClipPlayer />
           </div>
           <div className="shrink-0 flex justify-center">
@@ -137,7 +137,7 @@ export default function CandidatePlayPage() {
           </div>
         </div>
 
-        <div className="w-72 sm:w-80 shrink-0 min-h-0 flex flex-col gap-2 overflow-y-auto">
+        <div className="shrink-0 min-h-0 flex flex-col gap-2 overflow-y-auto" style={{ width: roomLayout.scoreboardWidth }}>
           <h2 className="font-display text-base font-700 text-white/70 shrink-0">Punktestand</h2>
           <Scoreboard players={players} highlightPlayerId={myPlayer.id} />
         </div>

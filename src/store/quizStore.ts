@@ -31,11 +31,28 @@ export interface BuzzerStateRow {
   won_at: string | null
 }
 
+// Host-einstellbare Basisgrößen. Seitenverhältnisse (16:9 Kameras, 55:29 Video) ergeben sich
+// daraus automatisch in den Komponenten, statt separat gespeichert zu werden.
+export interface RoomLayoutSettings {
+  camSize: number // px, Zielbreite je Kamera-Kachel
+  videoMaxHeight: number // vh, Deckelhöhe des Videobereichs
+  sidebarWidth: number // px, Songlisten-Breite (nur Host-Ansicht)
+  scoreboardWidth: number // px, Punktestand-Breite
+}
+
+export const DEFAULT_ROOM_LAYOUT: RoomLayoutSettings = {
+  camSize: 320,
+  videoMaxHeight: 34,
+  sidebarWidth: 260,
+  scoreboardWidth: 320,
+}
+
 interface QuizState {
   roomId: string | null
   players: PlayerRow[]
   playbackState: PlaybackStateRow | null
   buzzerState: BuzzerStateRow | null
+  roomLayout: RoomLayoutSettings
   channel: RealtimeChannel | null
   connect: (roomId: string) => Promise<void>
   disconnect: () => void
@@ -48,11 +65,16 @@ interface QuizState {
 // ("cannot add postgres_changes callbacks ... after subscribe()").
 let inFlight: { roomId: string; promise: Promise<void> } | null = null
 
+function mergeLayout(raw: unknown): RoomLayoutSettings {
+  return { ...DEFAULT_ROOM_LAYOUT, ...(raw && typeof raw === 'object' ? raw : {}) }
+}
+
 export const useQuizStore = create<QuizState>((set, get) => ({
   roomId: null,
   players: [],
   playbackState: null,
   buzzerState: null,
+  roomLayout: DEFAULT_ROOM_LAYOUT,
   channel: null,
 
   connect: async (roomId) => {
@@ -63,10 +85,11 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     if (current.channel) supabase.removeChannel(current.channel)
 
     const promise = (async () => {
-      const [playersRes, playbackRes, buzzerRes] = await Promise.all([
+      const [playersRes, playbackRes, buzzerRes, roomRes] = await Promise.all([
         supabase.from('players').select('*').eq('room_id', roomId).order('joined_at', { ascending: true }),
         supabase.from('playback_state').select('*').eq('room_id', roomId).maybeSingle(),
         supabase.from('buzzer_state').select('*').eq('room_id', roomId).maybeSingle(),
+        supabase.from('rooms').select('layout').eq('id', roomId).maybeSingle(),
       ])
 
       set({
@@ -74,6 +97,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         players: playersRes.data ?? [],
         playbackState: playbackRes.data ?? null,
         buzzerState: buzzerRes.data ?? null,
+        roomLayout: mergeLayout(roomRes.data?.layout),
       })
 
       const channel = supabase
@@ -99,6 +123,13 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             if (payload.eventType !== 'DELETE') set({ buzzerState: payload.new as BuzzerStateRow })
           },
         )
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+          (payload: RealtimePostgresChangesPayload<{ layout: unknown }>) => {
+            set({ roomLayout: mergeLayout((payload.new as { layout?: unknown } | undefined)?.layout) })
+          },
+        )
         .subscribe()
 
       set({ channel })
@@ -115,7 +146,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   disconnect: () => {
     const { channel } = get()
     if (channel) supabase.removeChannel(channel)
-    set({ roomId: null, players: [], playbackState: null, buzzerState: null, channel: null })
+    set({ roomId: null, players: [], playbackState: null, buzzerState: null, roomLayout: DEFAULT_ROOM_LAYOUT, channel: null })
   },
 }))
 

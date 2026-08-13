@@ -24,7 +24,8 @@ export default function HostLivePage() {
   const [busy, setBusy] = useState(false)
 
   const { players, playbackState, buzzerState, connect, disconnect } = useQuizStore()
-  const { token: videoToken, url: videoUrl } = useLiveKitToken(room?.code, 'host')
+  const { token: videoToken, url: videoUrl, error: tokenError } = useLiveKitToken(room?.code, 'host')
+  const [videoError, setVideoError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!roomCode) return
@@ -164,8 +165,17 @@ export default function HostLivePage() {
         </p>
       </div>
 
+      {(tokenError || videoError) && <p className="text-poke-red-400 text-sm">{tokenError ?? videoError}</p>}
+
       {videoToken && videoUrl && (
-        <LiveKitRoom serverUrl={videoUrl} token={videoToken} video audio={false} connect>
+        <LiveKitRoom
+          serverUrl={videoUrl}
+          token={videoToken}
+          video
+          audio={false}
+          connect
+          onError={(err) => setVideoError(errorMessage(err, 'Kamera-Verbindung fehlgeschlagen.'))}
+        >
           <CamGrid players={players} includeHost={false} winnerPlayerId={buzzerState?.winner_player_id} />
         </LiveKitRoom>
       )}

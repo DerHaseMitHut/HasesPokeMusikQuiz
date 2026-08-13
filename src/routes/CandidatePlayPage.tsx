@@ -21,7 +21,8 @@ export default function CandidatePlayPage() {
 
   const { players, connect, disconnect } = useQuizStore()
   const [playersLoaded, setPlayersLoaded] = useState(false)
-  const { token: videoToken, url: videoUrl } = useLiveKitToken(room?.code, 'player')
+  const { token: videoToken, url: videoUrl, error: tokenError } = useLiveKitToken(room?.code, 'player')
+  const [videoError, setVideoError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!roomCode) return
@@ -63,8 +64,17 @@ export default function CandidatePlayPage() {
         </p>
       </div>
 
+      {(tokenError || videoError) && <p className="text-poke-red-400 text-sm text-center">{tokenError ?? videoError}</p>}
+
       {videoToken && videoUrl && (
-        <LiveKitRoom serverUrl={videoUrl} token={videoToken} video audio={false} connect>
+        <LiveKitRoom
+          serverUrl={videoUrl}
+          token={videoToken}
+          video
+          audio={false}
+          connect
+          onError={(err) => setVideoError(errorMessage(err, 'Kamera-Verbindung fehlgeschlagen.'))}
+        >
           <CamGrid players={players} includeHost onlyIdentities={[myPlayer.id]} />
         </LiveKitRoom>
       )}

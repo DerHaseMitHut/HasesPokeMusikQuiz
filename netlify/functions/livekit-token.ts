@@ -42,7 +42,18 @@ export default async (req: Request, _context: Context): Promise<Response> => {
   const livekitApiKey = process.env.LIVEKIT_API_KEY
   const livekitApiSecret = process.env.LIVEKIT_API_SECRET
   if (!supabaseUrl || !supabaseAnonKey || !livekitUrl || !livekitApiKey || !livekitApiSecret) {
-    return new Response('Server-Konfiguration unvollständig', { status: 500 })
+    const diagnostic = {
+      cwd: process.cwd(),
+      dirname: import.meta.dirname,
+      have: {
+        VITE_SUPABASE_URL: Boolean(supabaseUrl),
+        VITE_SUPABASE_ANON_KEY: Boolean(supabaseAnonKey),
+        VITE_LIVEKIT_URL: Boolean(livekitUrl),
+        LIVEKIT_API_KEY: Boolean(livekitApiKey),
+        LIVEKIT_API_SECRET: Boolean(livekitApiSecret),
+      },
+    }
+    return new Response(`Server-Konfiguration unvollständig: ${JSON.stringify(diagnostic)}`, { status: 500 })
   }
 
   // RLS greift auch hier — derselbe Anon-Key + das User-JWT wie im Browser,

@@ -73,20 +73,34 @@ export default function ActiveClipPlayer() {
     if (state.is_playing) video.play().catch(() => {})
   }
 
+  // aspect-ratio allein reicht nicht: bei einem flex-Kind mit unbestimmter Breite UND Höhe
+  // greift der Seitenverhältnis-Constraint erst, wenn genau eine Dimension feststeht. Per
+  // Container-Query-Einheiten (bezogen auf dieses Wrapper-Element, containerType: 'size')
+  // lässt sich "größtmögliche 55:29-Box, die in die verfügbare Fläche passt" ohne JS lösen —
+  // min() wählt automatisch die limitierende Dimension (Breite oder Höhe).
   return (
-    <div className="w-full h-full bg-black rounded-2xl overflow-hidden flex items-center justify-center">
-      {clipUrl ? (
-        <video
-          key={clipUrl}
-          ref={videoRef}
-          src={clipUrl}
-          className="w-full h-full object-contain"
-          playsInline
-          onLoadedMetadata={handleLoadedMetadata}
-        />
-      ) : (
-        <p className="text-white/40">Kein Song geladen.</p>
-      )}
+    <div className="w-full h-full flex items-center justify-center" style={{ containerType: 'size' }}>
+      <div
+        className="bg-black rounded-2xl overflow-hidden flex items-center justify-center"
+        style={{
+          aspectRatio: '55 / 29',
+          width: 'min(100%, calc(100cqh * 55 / 29))',
+          height: 'min(100%, calc(100cqw * 29 / 55))',
+        }}
+      >
+        {clipUrl ? (
+          <video
+            key={clipUrl}
+            ref={videoRef}
+            src={clipUrl}
+            className="w-full h-full object-contain"
+            playsInline
+            onLoadedMetadata={handleLoadedMetadata}
+          />
+        ) : (
+          <p className="text-white/40">Kein Song geladen.</p>
+        )}
+      </div>
     </div>
   )
 }

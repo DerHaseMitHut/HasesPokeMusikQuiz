@@ -6,6 +6,7 @@ import { useAuthStore } from '@/features/auth/authStore'
 import { useQuizStore } from '@/store/quizStore'
 import { updatePlayerVdoUrl } from '@/features/players/players'
 import CamTile from '@/components/ui/CamTile'
+import MusicStaff from '@/components/ui/MusicStaff'
 import Button from '@/components/ui/Button'
 import Scoreboard from '@/components/ui/Scoreboard'
 import BuzzerButton from '@/features/buzzer/BuzzerButton'
@@ -108,24 +109,27 @@ export default function CandidatePlayPage() {
         </form>
       )}
 
-      <div
-        className="grid gap-2 sm:gap-3 shrink-0"
-        style={{ height: '22vh', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}
-      >
-        <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
-        {players.map((player) => (
-          <CamTile
-            key={player.id}
-            vdoUrl={player.vdo_url}
-            label={player.id === myPlayer.id ? `${player.display_name} (Du)` : player.display_name}
-            score={player.score}
-          />
-        ))}
+      <div className="shrink-0">
+        <MusicStaff className="h-6 w-full -mb-1" />
+        <div
+          className="grid gap-2 sm:gap-3 justify-center"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 220px))' }}
+        >
+          <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
+          {players.map((player) => (
+            <CamTile
+              key={player.id}
+              vdoUrl={player.vdo_url}
+              label={player.id === myPlayer.id ? `${player.display_name} (Du)` : player.display_name}
+              score={player.score}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 flex gap-2 sm:gap-3 min-h-0">
-        <div className="flex-[2] flex flex-col gap-2 sm:gap-3 min-h-0">
-          <div className="flex-1 min-h-0">
+        <div className="flex-[2] min-w-0 flex flex-col gap-2 sm:gap-3 min-h-0">
+          <div className="flex-1 min-h-0 min-w-0">
             <ActiveClipPlayer />
           </div>
           <div className="shrink-0 flex justify-center">

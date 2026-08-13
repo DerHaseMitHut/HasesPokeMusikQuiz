@@ -10,6 +10,7 @@ import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/
 import { useQuizStore } from '@/store/quizStore'
 import Scoreboard from '@/components/ui/Scoreboard'
 import CamTile from '@/components/ui/CamTile'
+import MusicStaff from '@/components/ui/MusicStaff'
 import Card from '@/components/ui/Card'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -179,26 +180,29 @@ export default function HostLivePage() {
         </p>
       </div>
 
-      <div
-        className="grid gap-2 sm:gap-3 shrink-0"
-        style={{ height: '18vh', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))' }}
-      >
-        <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" />
-        {players.map((player) => (
-          <CamTile
-            key={player.id}
-            vdoUrl={player.vdo_url}
-            label={player.display_name}
-            score={player.score}
-            highlighted={player.id === buzzerState?.winner_player_id}
-            onKick={() => handleKick(player.id, player.display_name)}
-          />
-        ))}
+      <div className="shrink-0">
+        <MusicStaff className="h-5 w-full -mb-1" />
+        <div
+          className="grid gap-2 sm:gap-3 justify-center"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 190px))' }}
+        >
+          <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" />
+          {players.map((player) => (
+            <CamTile
+              key={player.id}
+              vdoUrl={player.vdo_url}
+              label={player.display_name}
+              score={player.score}
+              highlighted={player.id === buzzerState?.winner_player_id}
+              onKick={() => handleKick(player.id, player.display_name)}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 flex gap-2 sm:gap-3 min-h-0">
-        <div className="flex-[2] flex flex-col gap-2 sm:gap-3 min-h-0">
-          <div className="flex-[3] min-h-0">
+        <div className="flex-[2] min-w-0 flex flex-col gap-2 sm:gap-3 min-h-0">
+          <div className="flex-[3] min-h-0 min-w-0">
             <ActiveClipPlayer />
           </div>
 

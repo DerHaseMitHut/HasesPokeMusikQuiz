@@ -4,6 +4,7 @@ import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { errorMessage } from '@/lib/errors'
 import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
+import MusicStaff from '@/components/ui/MusicStaff'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import PagePlaceholder from '@/components/ui/PagePlaceholder'
@@ -44,23 +45,26 @@ export default function ObsView() {
         <span className="text-white/40 text-sm">— {room.name}</span>
       </div>
 
-      <div
-        className="grid gap-2 shrink-0"
-        style={{ height: '26vh', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}
-      >
-        <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
-        {sorted.map((player) => (
-          <CamTile
-            key={player.id}
-            vdoUrl={player.vdo_url}
-            label={player.display_name}
-            score={player.score}
-            highlighted={player.id === buzzerState?.winner_player_id}
-          />
-        ))}
+      <div className="shrink-0">
+        <MusicStaff className="h-6 w-full -mb-1" />
+        <div
+          className="grid gap-2 justify-center"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 300px))' }}
+        >
+          <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
+          {sorted.map((player) => (
+            <CamTile
+              key={player.id}
+              vdoUrl={player.vdo_url}
+              label={player.display_name}
+              score={player.score}
+              highlighted={player.id === buzzerState?.winner_player_id}
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 min-w-0">
         <ActiveClipPlayer />
       </div>
     </div>

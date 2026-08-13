@@ -10,14 +10,18 @@ import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/
 import { useQuizStore } from '@/store/quizStore'
 import Scoreboard from '@/components/ui/Scoreboard'
 import CamTile from '@/components/ui/CamTile'
+import Card from '@/components/ui/Card'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import PagePlaceholder from '@/components/ui/PagePlaceholder'
+
+const PANEL_BTN = 'glossy font-display font-700 rounded-lg transition-all duration-150 active:translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none px-4 py-2 text-sm'
 
 export default function HostLivePage() {
   const { roomCode } = useParams<{ roomCode: string }>()
   const [room, setRoom] = useState<Room | null | undefined>(undefined)
   const [songs, setSongs] = useState<Song[]>([])
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -27,21 +31,21 @@ export default function HostLivePage() {
     if (!roomCode) return
     getRoomByCode(roomCode)
       .then(setRoom)
-      .catch((err) => setError(errorMessage(err, 'Raum konnte nicht geladen werden.')))
+      .catch((err) => setLoadError(errorMessage(err, 'Raum konnte nicht geladen werden.')))
   }, [roomCode])
 
   useEffect(() => {
     if (!room) return
     let cancelled = false
     connect(room.id).catch((err) => {
-      if (!cancelled) setError(errorMessage(err, 'Verbindung zum Raum fehlgeschlagen.'))
+      if (!cancelled) setLoadError(errorMessage(err, 'Verbindung zum Raum fehlgeschlagen.'))
     })
     listSongsForRoom(room.id)
       .then((s) => {
         if (!cancelled) setSongs(s)
       })
       .catch((err) => {
-        if (!cancelled) setError(errorMessage(err, 'Songs konnten nicht geladen werden.'))
+        if (!cancelled) setLoadError(errorMessage(err, 'Songs konnten nicht geladen werden.'))
       })
     return () => {
       cancelled = true
@@ -49,7 +53,7 @@ export default function HostLivePage() {
     }
   }, [room, connect, disconnect])
 
-  if (error) return <PagePlaceholder title="Fehler" note={error} />
+  if (loadError) return <PagePlaceholder title="Fehler" note={loadError} />
   if (room === undefined) return <LoadingScreen />
   if (room === null) return <PagePlaceholder title="Raum nicht gefunden" note={`Kein Raum mit Code „${roomCode}“.`} />
 
@@ -168,11 +172,13 @@ export default function HostLivePage() {
   return (
     <div className="min-h-screen px-6 py-10 max-w-4xl mx-auto flex flex-col gap-8">
       <div>
-        <h1 className="font-display text-2xl font-700">{room.name}</h1>
+        <h1 className="font-display text-3xl font-800 drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">{room.name}</h1>
         <p className="text-white/50 text-sm mt-1">
           Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
         </p>
       </div>
+
+      {error && <p className="text-poke-red-400 text-sm">{error}</p>}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" />
@@ -190,106 +196,111 @@ export default function HostLivePage() {
 
       <ActiveClipPlayer />
 
-      <div className="rounded-2xl bg-stage-800 border border-stage-600 p-6 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <p className="font-700">
-            {currentSong ? currentSong.title : 'Kein Song geladen'}
-            {playbackState?.current_clip === 'solution' && (
-              <span className="text-poke-yellow-400"> — Lösung</span>
-            )}
-          </p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleTogglePlay}
-              disabled={busy || !playbackState?.current_song_id}
-              className="font-display font-700 rounded-lg bg-poke-blue-600 hover:bg-poke-blue-500 disabled:opacity-50 transition-colors px-4 py-2"
-            >
-              {playbackState?.is_playing ? 'Pause' : 'Play'}
-            </button>
-            <button
-              type="button"
-              onClick={handleShowSolution}
-              disabled={busy || !playbackState?.current_song_id || playbackState.current_clip === 'solution'}
-              className="font-display font-700 rounded-lg bg-poke-yellow-400 text-stage-950 hover:bg-poke-yellow-300 disabled:opacity-50 transition-colors px-4 py-2"
-            >
-              Lösung zeigen
-            </button>
-          </div>
-        </div>
-
-        <ul className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-          {songs.map((song) => (
-            <li
-              key={song.id}
-              className={`flex items-center justify-between rounded-lg px-3 py-2 ${
-                song.id === playbackState?.current_song_id ? 'bg-poke-blue-600/20' : 'bg-stage-900'
-              }`}
-            >
-              <span className="truncate">{song.title}</span>
+      <Card>
+        <div className="p-6 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <p className="font-700">
+              {currentSong ? currentSong.title : 'Kein Song geladen'}
+              {playbackState?.current_clip === 'solution' && (
+                <span className="text-poke-yellow-400"> — Lösung</span>
+              )}
+            </p>
+            <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => handleLoadSong(song.id)}
-                disabled={busy}
-                className="text-sm font-700 text-poke-blue-400 hover:text-poke-blue-300 disabled:opacity-50 shrink-0 ml-3"
+                onClick={handleTogglePlay}
+                disabled={busy || !playbackState?.current_song_id}
+                className={`${PANEL_BTN} bg-gradient-to-b from-poke-blue-400 to-poke-blue-600 text-white hover:brightness-110`}
               >
-                Laden
+                {playbackState?.is_playing ? 'Pause' : 'Play'}
               </button>
-            </li>
-          ))}
-          {songs.length === 0 && <p className="text-white/50 text-sm">Keine Songs in diesem Raum.</p>}
-        </ul>
-      </div>
+              <button
+                type="button"
+                onClick={handleShowSolution}
+                disabled={busy || !playbackState?.current_song_id || playbackState.current_clip === 'solution'}
+                className={`${PANEL_BTN} bg-gradient-to-b from-poke-yellow-300 to-poke-yellow-500 text-stage-950 hover:brightness-105`}
+              >
+                Lösung zeigen
+              </button>
+            </div>
+          </div>
 
-      <div className="rounded-2xl bg-stage-800 border border-stage-600 p-6 flex flex-col items-center gap-4">
-        <p className="text-white/70">
-          {buzzerState?.is_open
-            ? 'Buzzer ist offen — Kandidaten können buzzern.'
-            : winner
-              ? `${winner.display_name} war zuerst!`
-              : 'Buzzer ist geschlossen.'}
-        </p>
+          <ul className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+            {songs.map((song) => (
+              <li
+                key={song.id}
+                className={`flex items-center justify-between rounded-lg px-3 py-2 transition-colors ${
+                  song.id === playbackState?.current_song_id ? 'bg-poke-blue-600/20' : 'bg-stage-900/70'
+                }`}
+              >
+                <span className="truncate">{song.title}</span>
+                <button
+                  type="button"
+                  onClick={() => handleLoadSong(song.id)}
+                  disabled={busy}
+                  className="text-sm font-700 text-poke-blue-400 hover:text-poke-blue-300 disabled:opacity-50 shrink-0 ml-3"
+                >
+                  Laden
+                </button>
+              </li>
+            ))}
+            {songs.length === 0 && <p className="text-white/50 text-sm">Keine Songs in diesem Raum.</p>}
+          </ul>
+        </div>
+      </Card>
 
-        {winner && (
+      <Card>
+        <div className="p-6 flex flex-col items-center gap-4">
+          <p className="text-white/70 flex items-center gap-2">
+            {buzzerState?.is_open && <span className="w-2 h-2 rounded-full bg-poke-red-500 live-dot" />}
+            {buzzerState?.is_open
+              ? 'Buzzer ist offen — Kandidaten können buzzern.'
+              : winner
+                ? `${winner.display_name} war zuerst!`
+                : 'Buzzer ist geschlossen.'}
+          </p>
+
+          {winner && (
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleCorrect}
+                disabled={busy || !currentSong}
+                className={`${PANEL_BTN} px-6 py-3 bg-gradient-to-b from-poke-yellow-300 to-note-green text-stage-950 hover:brightness-105`}
+              >
+                Richtig{currentSong ? ` (+${currentSong.points})` : ''}
+              </button>
+              <button
+                type="button"
+                onClick={handleWrong}
+                disabled={busy}
+                className={`${PANEL_BTN} px-6 py-3 bg-stage-700 text-white/90 hover:bg-stage-600`}
+              >
+                Falsch
+              </button>
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={handleCorrect}
-              disabled={busy || !currentSong}
-              className="font-display font-700 rounded-xl bg-note-green text-stage-950 hover:opacity-90 disabled:opacity-50 transition-opacity px-6 py-3"
+              onClick={handleOpen}
+              disabled={busy || buzzerState?.is_open}
+              className={`${PANEL_BTN} px-6 py-3 bg-gradient-to-b from-poke-red-400 to-poke-red-600 text-white hover:brightness-110`}
             >
-              Richtig{currentSong ? ` (+${currentSong.points})` : ''}
+              Buzzer öffnen
             </button>
             <button
               type="button"
-              onClick={handleWrong}
-              disabled={busy}
-              className="font-display font-700 rounded-xl bg-stage-700 hover:bg-stage-600 disabled:opacity-50 transition-colors px-6 py-3"
+              onClick={handleClose}
+              disabled={busy || !buzzerState?.is_open}
+              className={`${PANEL_BTN} px-6 py-3 bg-stage-700 text-white/90 hover:bg-stage-600`}
             >
-              Falsch
+              Schließen
             </button>
           </div>
-        )}
-
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={handleOpen}
-            disabled={busy || buzzerState?.is_open}
-            className="font-display font-700 rounded-xl bg-poke-red-500 hover:bg-poke-red-400 disabled:opacity-50 transition-colors px-6 py-3"
-          >
-            Buzzer öffnen
-          </button>
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={busy || !buzzerState?.is_open}
-            className="font-display font-700 rounded-xl bg-stage-700 hover:bg-stage-600 disabled:opacity-50 transition-colors px-6 py-3"
-          >
-            Schließen
-          </button>
         </div>
-      </div>
+      </Card>
 
       <div>
         <h2 className="font-display text-lg font-700 mb-3">Kandidaten ({players.length})</h2>

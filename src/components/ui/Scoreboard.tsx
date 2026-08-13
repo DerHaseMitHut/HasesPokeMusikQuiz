@@ -1,5 +1,11 @@
 import type { PlayerRow } from '@/store/quizStore'
 
+const RANK_COLORS: Record<number, string> = {
+  0: 'bg-gradient-to-b from-poke-yellow-300 to-poke-yellow-500 text-stage-950',
+  1: 'bg-gradient-to-b from-white/70 to-white/40 text-stage-950',
+  2: 'bg-gradient-to-b from-poke-red-400/80 to-poke-red-600/80 text-white',
+}
+
 export default function Scoreboard({
   players,
   highlightPlayerId,
@@ -27,7 +33,13 @@ export default function Scoreboard({
                   : 'bg-stage-800 border-stage-600'
             }`}
           >
-            <span className="font-display font-700 text-white/40 w-5 text-right">{index + 1}</span>
+            <span
+              className={`flex items-center justify-center w-6 h-6 rounded-full font-display font-800 text-xs shrink-0 ${
+                RANK_COLORS[index] ?? 'bg-stage-700 text-white/50'
+              }`}
+            >
+              {index + 1}
+            </span>
             <span className="flex-1 font-700 truncate">{player.display_name}</span>
             <span className="font-display font-700 text-poke-yellow-400">{player.score}</span>
           </li>

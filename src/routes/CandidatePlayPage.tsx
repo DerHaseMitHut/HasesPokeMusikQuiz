@@ -6,6 +6,8 @@ import { useAuthStore } from '@/features/auth/authStore'
 import { useQuizStore } from '@/store/quizStore'
 import { updatePlayerVdoUrl } from '@/features/players/players'
 import CamTile from '@/components/ui/CamTile'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 import Scoreboard from '@/components/ui/Scoreboard'
 import BuzzerButton from '@/features/buzzer/BuzzerButton'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
@@ -22,6 +24,7 @@ export default function CandidatePlayPage() {
   const [playersLoaded, setPlayersLoaded] = useState(false)
   const vdoUrlInputRef = useRef<HTMLInputElement>(null)
   const [savingVdoUrl, setSavingVdoUrl] = useState(false)
+  const [vdoUrlError, setVdoUrlError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!roomCode) return
@@ -58,11 +61,11 @@ export default function CandidatePlayPage() {
     event.preventDefault()
     if (!myPlayer) return
     setSavingVdoUrl(true)
-    setError(null)
+    setVdoUrlError(null)
     try {
       await updatePlayerVdoUrl(myPlayer.id, vdoUrlInputRef.current?.value.trim() ?? '')
     } catch (err) {
-      setError(errorMessage(err, 'Kamera-Link konnte nicht gespeichert werden.'))
+      setVdoUrlError(errorMessage(err, 'Kamera-Link konnte nicht gespeichert werden.'))
     } finally {
       setSavingVdoUrl(false)
     }
@@ -71,7 +74,7 @@ export default function CandidatePlayPage() {
   return (
     <div className="min-h-screen px-6 py-10 max-w-3xl mx-auto flex flex-col gap-8">
       <div className="text-center">
-        <h1 className="font-display text-2xl font-700">{room.name}</h1>
+        <h1 className="font-display text-3xl font-800 drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">{room.name}</h1>
         <p className="text-white/50 text-sm mt-1">
           Angemeldet als <span className="text-poke-yellow-400 font-700">{myPlayer.display_name}</span>
         </p>
@@ -89,22 +92,21 @@ export default function CandidatePlayPage() {
         ))}
       </div>
 
-      <form onSubmit={handleSaveVdoUrl} className="flex gap-2">
-        <input
-          ref={vdoUrlInputRef}
-          key={myPlayer.vdo_url}
-          defaultValue={myPlayer.vdo_url ?? ''}
-          placeholder="Dein VDO.Ninja-Link"
-          className="flex-1 rounded-xl bg-stage-800 border border-stage-600 px-4 py-2 text-sm outline-none focus:border-poke-yellow-400"
-        />
-        <button
-          type="submit"
-          disabled={savingVdoUrl}
-          className="rounded-xl bg-stage-700 hover:bg-stage-600 disabled:opacity-50 px-4 py-2 text-sm transition-colors shrink-0"
-        >
-          {savingVdoUrl ? '…' : 'Speichern'}
-        </button>
-      </form>
+      <Card>
+        <form onSubmit={handleSaveVdoUrl} className="p-4 flex gap-2">
+          <input
+            ref={vdoUrlInputRef}
+            key={myPlayer.vdo_url}
+            defaultValue={myPlayer.vdo_url ?? ''}
+            placeholder="Dein Kamera-Link"
+            className="flex-1 rounded-xl bg-stage-900/80 border border-stage-600 px-4 py-2 text-sm outline-none focus:border-poke-yellow-400 focus:shadow-[0_0_0_3px_rgba(255,203,5,0.15)] transition-shadow"
+          />
+          <Button type="submit" variant="ghost" size="sm" disabled={savingVdoUrl} className="shrink-0">
+            {savingVdoUrl ? '…' : 'Speichern'}
+          </Button>
+        </form>
+        {vdoUrlError && <p className="text-poke-red-400 text-sm px-4 pb-4">{vdoUrlError}</p>}
+      </Card>
 
       <ActiveClipPlayer />
 

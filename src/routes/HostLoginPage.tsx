@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { verifyHostPassword } from '@/features/auth/auth'
 import { useAuthStore } from '@/features/auth/authStore'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 
 export default function HostLoginPage() {
   const [password, setPassword] = useState('')
@@ -31,31 +33,26 @@ export default function HostLoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm bg-stage-800 border border-stage-600 rounded-2xl p-8 flex flex-col gap-4"
-      >
-        <h1 className="font-display text-2xl font-700 text-center mb-2">Gastgeber-Login</h1>
+      <Card className="w-full max-w-sm shadow-[0_0_40px_-12px_rgba(0,0,0,0.6)]">
+        <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-4">
+          <h1 className="font-display text-2xl font-700 text-center mb-2">Gastgeber-Login</h1>
 
-        <input
-          type="password"
-          autoFocus
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Passwort"
-          className="rounded-xl bg-stage-900 border border-stage-600 px-4 py-3 outline-none focus:border-poke-yellow-400"
-        />
+          <input
+            type="password"
+            autoFocus
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Passwort"
+            className="rounded-xl bg-stage-900/80 border border-stage-600 px-4 py-3 outline-none focus:border-poke-yellow-400 focus:shadow-[0_0_0_3px_rgba(255,203,5,0.15)] transition-shadow"
+          />
 
-        {error && <p className="text-poke-red-400 text-sm">{error}</p>}
+          {error && <p className="text-poke-red-400 text-sm">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={submitting || password.length === 0}
-          className="font-display font-700 rounded-xl bg-poke-red-500 hover:bg-poke-red-400 disabled:opacity-50 disabled:hover:bg-poke-red-500 transition-colors py-3"
-        >
-          {submitting ? 'Prüfe…' : 'Anmelden'}
-        </button>
-      </form>
+          <Button type="submit" disabled={submitting || password.length === 0} className="w-full">
+            {submitting ? 'Prüfe…' : 'Anmelden'}
+          </Button>
+        </form>
+      </Card>
     </div>
   )
 }

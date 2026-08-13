@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { createRoom, listRooms, type Room } from '@/features/rooms/rooms'
+import { createRoom, deleteRoom, listRooms, type Room } from '@/features/rooms/rooms'
 import { useAuthStore } from '@/features/auth/authStore'
 import { errorMessage } from '@/lib/errors'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -10,6 +10,7 @@ export default function HostRoomListPage() {
   const [rooms, setRooms] = useState<Room[] | null>(null)
   const [newRoomName, setNewRoomName] = useState('')
   const [creating, setCreating] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -31,6 +32,20 @@ export default function HostRoomListPage() {
       setError(errorMessage(err, 'Raum konnte nicht erstellt werden.'))
     } finally {
       setCreating(false)
+    }
+  }
+
+  async function handleDelete(room: Room) {
+    if (!window.confirm(`Raum „${room.name}“ (${room.code}) und alle zugehörigen Daten unwiderruflich löschen?`)) return
+    setDeletingId(room.id)
+    setError(null)
+    try {
+      await deleteRoom(room.id)
+      setRooms((prev) => prev?.filter((r) => r.id !== room.id) ?? null)
+    } catch (err) {
+      setError(errorMessage(err, 'Raum konnte nicht gelöscht werden.'))
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -81,6 +96,14 @@ export default function HostRoomListPage() {
               >
                 Live
               </Link>
+              <button
+                type="button"
+                onClick={() => handleDelete(room)}
+                disabled={deletingId === room.id}
+                className="rounded-lg bg-poke-red-500 hover:bg-poke-red-400 disabled:opacity-50 px-4 py-2 text-sm transition-colors"
+              >
+                {deletingId === room.id ? '…' : 'Löschen'}
+              </button>
             </div>
           </li>
         ))}

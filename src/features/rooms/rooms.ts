@@ -38,6 +38,11 @@ export async function getRoomByCode(code: string): Promise<Room | null> {
   return data
 }
 
+export async function deleteRoom(roomId: string): Promise<void> {
+  const { error } = await supabase.from('rooms').delete().eq('id', roomId)
+  if (error) throw error
+}
+
 export async function createRoom(name: string, hostUserId: string): Promise<Room> {
   // Kollisionen sind bei ~1 Mrd. Kombinationen und wenigen Räumen/Jahr praktisch
   // ausgeschlossen; ein einziger Retry-Versuch reicht als Sicherheitsnetz.

@@ -8,9 +8,10 @@ import rotomUrl from '@/assets/decor/rotom.png'
 // Bewusst sehr niedrige Opacity + pointer-events-none + -z-10, damit nichts mit den
 // eigentlichen Inhalten konkurriert.
 // Ein weiterer Pokeball sitzt zusätzlich zentriert hinter dem Buzzer (siehe BuzzerButton.tsx)
-// und folgt damit dem Buzzer statt an einer festen Bildschirmposition zu raten -- das ersetzt
-// nicht diese beiden hier, die generell in allen drei Ansichten (Host/Kandidat/OBS) sichtbar
-// bleiben sollen, auch dort, wo es keinen Buzzer gibt.
+// und folgt damit dem Buzzer statt an einer festen Bildschirmposition zu raten. Der zweite
+// (rechte) Ball hier landet an ungefähr derselben Stelle -- die Kandidatenansicht blendet ihn
+// daher per hideRightBall aus, damit dort nicht zwei Bälle übereinanderliegen; Host/OBS (ohne
+// Buzzer) zeigen ihn weiterhin.
 const BALLS = [
   'fixed -top-24 -left-16 w-[20vw] h-[20vw] max-w-[300px] max-h-[300px] opacity-[0.04] rotate-[18deg]',
   'fixed top-[62%] -right-20 w-[22vw] h-[22vw] max-w-[320px] max-h-[320px] opacity-[0.045] -translate-y-1/2 rotate-[-15deg]',
@@ -26,10 +27,11 @@ const POKEMON = [
   { src: rotomUrl, className: 'fixed top-1/2 -left-10 w-[19.5vw] max-w-[285px] opacity-[0.14] -translate-y-1/2 rotate-[-10deg]' },
 ]
 
-export default function PokeballWatermark() {
+export default function PokeballWatermark({ hideRightBall }: { hideRightBall?: boolean } = {}) {
+  const balls = hideRightBall ? BALLS.slice(0, 1) : BALLS
   return (
     <>
-      {BALLS.map((className, i) => (
+      {balls.map((className, i) => (
         <PokeballIcon key={`ball-${i}`} className={`pointer-events-none -z-10 ${className}`} />
       ))}
       {POKEMON.map((p, i) => (

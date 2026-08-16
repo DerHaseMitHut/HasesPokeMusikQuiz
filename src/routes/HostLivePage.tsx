@@ -4,7 +4,7 @@ import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { listSongsForRoom, type Song } from '@/features/songs/songs'
 import { errorMessage } from '@/lib/errors'
 import { closeBuzzer, openBuzzer, resolveBuzzer } from '@/features/buzzer/buzzer'
-import { awardPoints, kickPlayer } from '@/features/players/players'
+import { awardPoints, kickPlayer, uploadPlayerAvatar, getPlayerAvatarUrl } from '@/features/players/players'
 import { loadSong, setPlaying, showSolution } from '@/features/playback/playback'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
 import { useQuizStore } from '@/store/quizStore'
@@ -169,6 +169,18 @@ export default function HostLivePage() {
     }
   }
 
+  async function handleAvatarUpload(playerId: string, file: File) {
+    setBusy(true)
+    setError(null)
+    try {
+      await uploadPlayerAvatar(playerId, file)
+    } catch (err) {
+      setError(errorMessage(err, 'Icon konnte nicht hochgeladen werden.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function handleKick(playerId: string, displayName: string) {
     if (!window.confirm(`${displayName} aus dem Raum entfernen?`)) return
     setBusy(true)
@@ -220,6 +232,8 @@ export default function HostLivePage() {
               score={player.score}
               highlighted={player.id === buzzerState?.winner_player_id}
               onKick={() => handleKick(player.id, player.display_name)}
+              avatarUrl={getPlayerAvatarUrl(player.avatar_storage_path)}
+              onAvatarUpload={(file) => handleAvatarUpload(player.id, file)}
             />
           ))}
         </div>

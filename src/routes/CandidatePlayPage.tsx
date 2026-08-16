@@ -4,7 +4,7 @@ import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { errorMessage } from '@/lib/errors'
 import { useAuthStore } from '@/features/auth/authStore'
 import { useQuizStore } from '@/store/quizStore'
-import { updatePlayerVdoUrl } from '@/features/players/players'
+import { updatePlayerVdoUrl, getPlayerAvatarUrl } from '@/features/players/players'
 import CamTile from '@/components/ui/CamTile'
 import PokeballWatermark from '@/components/ui/PokeballWatermark'
 import StaffLines from '@/components/ui/StaffLines'
@@ -123,6 +123,7 @@ export default function CandidatePlayPage() {
               vdoUrl={player.vdo_url}
               label={player.id === myPlayer.id ? `${player.display_name} (Du)` : player.display_name}
               score={player.score}
+              avatarUrl={getPlayerAvatarUrl(player.avatar_storage_path)}
             />
           ))}
         </div>

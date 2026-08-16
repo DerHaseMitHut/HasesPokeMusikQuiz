@@ -9,6 +9,7 @@ export interface PlayerRow {
   display_name: string
   score: number
   vdo_url: string | null
+  avatar_storage_path: string | null
   joined_at: string
 }
 

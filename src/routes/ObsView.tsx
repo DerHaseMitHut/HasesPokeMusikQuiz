@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { getRoomByCode, type Room } from '@/features/rooms/rooms'
+import { getPlayerAvatarUrl } from '@/features/players/players'
 import { errorMessage } from '@/lib/errors'
 import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
@@ -66,6 +67,7 @@ export default function ObsView() {
               label={player.display_name}
               score={player.score}
               highlighted={player.id === buzzerState?.winner_player_id}
+              avatarUrl={getPlayerAvatarUrl(player.avatar_storage_path)}
             />
           ))}
         </div>

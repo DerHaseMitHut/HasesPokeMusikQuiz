@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { normalizeVdoUrl } from '@/lib/vdoNinja'
 
 const AVATAR_GRADIENTS = [
@@ -23,6 +24,8 @@ export default function CamTile({
   highlighted,
   isHost,
   onKick,
+  avatarUrl,
+  onAvatarUpload,
 }: {
   vdoUrl: string | null | undefined
   label: string
@@ -30,8 +33,11 @@ export default function CamTile({
   highlighted?: boolean
   isHost?: boolean
   onKick?: () => void
+  avatarUrl?: string | null
+  onAvatarUpload?: (file: File) => void
 }) {
   const url = normalizeVdoUrl(vdoUrl)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
 
   return (
     <div className="flex flex-col gap-1.5 sm:gap-2">
@@ -66,10 +72,39 @@ export default function CamTile({
       </div>
 
       <div className="glossy rounded-lg bg-stage-800/95 border border-white/10 px-3 py-2 flex items-center gap-2.5 shrink-0">
-        <span
-          className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(label, Boolean(isHost))} flex items-center justify-center text-sm font-display font-800 text-white shrink-0`}
-        >
-          {label.slice(0, 1).toUpperCase()}
+        <span className="relative w-9 h-9 shrink-0">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
+          ) : (
+            <span
+              className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(label, Boolean(isHost))} flex items-center justify-center text-sm font-display font-800 text-white`}
+            >
+              {label.slice(0, 1).toUpperCase()}
+            </span>
+          )}
+          {onAvatarUpload && (
+            <>
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                title="Icon ändern"
+                className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-stage-700 border border-stage-900 flex items-center justify-center text-[9px] leading-none text-white/80 hover:bg-poke-yellow-500 hover:text-stage-950 transition-colors"
+              >
+                ✎
+              </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/png"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) onAvatarUpload(file)
+                  e.target.value = ''
+                }}
+              />
+            </>
+          )}
         </span>
         <span className="flex-1 truncate text-center font-700 text-base">{label}</span>
         {score !== undefined ? (

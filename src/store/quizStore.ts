@@ -39,7 +39,7 @@ export interface RoomLayoutSettings {
 }
 
 export const DEFAULT_ROOM_LAYOUT: RoomLayoutSettings = {
-  camSize: 300,
+  camSize: 400,
   videoMaxHeight: 48,
 }
 

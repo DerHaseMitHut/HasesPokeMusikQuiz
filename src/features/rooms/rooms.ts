@@ -7,6 +7,7 @@ export interface Room {
   name: string
   host_user_id: string
   vdo_url: string | null
+  obs_token: string
   created_at: string
 }
 

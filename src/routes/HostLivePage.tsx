@@ -10,6 +10,7 @@ import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/
 import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
 import LayoutSettingsPanel from '@/components/ui/LayoutSettingsPanel'
+import PokeballWatermark from '@/components/ui/PokeballWatermark'
 import Card from '@/components/ui/Card'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -171,6 +172,7 @@ export default function HostLivePage() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden p-3 sm:p-4 gap-2 sm:gap-3">
+      <PokeballWatermark />
       <div className="flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <span className="font-display font-800 text-sm tracking-tight shrink-0">

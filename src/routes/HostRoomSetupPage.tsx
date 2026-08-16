@@ -39,7 +39,7 @@ export default function HostRoomSetupPage() {
   if (room === null) return <PagePlaceholder title="Raum nicht gefunden" note={`Kein Raum mit Code „${roomCode}“.`} />
 
   const joinUrl = `${window.location.origin}/join?code=${room.code}`
-  const obsUrl = `${window.location.origin}/obs/${room.code}`
+  const obsUrl = `${window.location.origin}/obs/${room.code}?token=${room.obs_token}`
 
   async function handleSaveVdoUrl(event: FormEvent) {
     event.preventDefault()

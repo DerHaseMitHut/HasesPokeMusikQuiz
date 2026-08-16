@@ -128,11 +128,8 @@ export default function CandidatePlayPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex items-center justify-center">
+      <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4 sm:gap-8">
         <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
-      </div>
-
-      <div className="shrink-0 flex justify-center">
         <BuzzerButton roomId={room.id} playerId={myPlayer.id} />
       </div>
     </div>

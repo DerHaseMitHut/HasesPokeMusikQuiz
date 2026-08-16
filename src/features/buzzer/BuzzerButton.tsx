@@ -3,36 +3,88 @@ import { pressBuzzer } from './buzzer'
 import { errorMessage } from '@/lib/errors'
 import { useQuizStore } from '@/store/quizStore'
 
+const HOTKEY_STORAGE_KEY = 'musikquiz:buzzer-hotkey'
+
+// KeyboardEvent.code -> Anzeigename. Nur für gängige Tasten, sonst wird der Rohcode gezeigt.
+function formatKeyCode(code: string): string {
+  if (code.startsWith('Key')) return code.slice(3)
+  if (code.startsWith('Digit')) return code.slice(5)
+  if (code.startsWith('Numpad')) return `Num ${code.slice(6)}`
+  if (code.startsWith('Arrow')) return `Pfeil ${code.slice(5)}`
+  if (code === 'Space') return 'Leertaste'
+  return code
+}
+
 export default function BuzzerButton({ roomId, playerId }: { roomId: string; playerId: string }) {
   const buzzerState = useQuizStore((s) => s.buzzerState)
   const players = useQuizStore((s) => s.players)
   const [pressed, setPressed] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hotkey, setHotkey] = useState<string | null>(() => localStorage.getItem(HOTKEY_STORAGE_KEY))
+  const [recording, setRecording] = useState(false)
 
   useEffect(() => {
     setPressed(false)
     setError(null)
   }, [buzzerState?.round_id])
 
-  if (!buzzerState) return null
-
-  const isOpen = buzzerState.is_open
-  const winnerId = buzzerState.winner_player_id
-  const iWon = winnerId === playerId
-  const someoneWon = winnerId !== null
-  const winnerName = someoneWon ? players.find((p) => p.id === winnerId)?.display_name : null
+  const isOpen = buzzerState?.is_open ?? false
 
   async function handlePress() {
-    if (!isOpen || pressed) return
+    if (!buzzerState || !isOpen || pressed) return
     setPressed(true)
     setError(null)
     try {
-      await pressBuzzer(roomId, buzzerState!.round_id, playerId)
+      await pressBuzzer(roomId, buzzerState.round_id, playerId)
     } catch (err) {
       setError(errorMessage(err, 'Buzzern fehlgeschlagen.'))
       setPressed(false)
     }
   }
+
+  // Hotkey auslösen -- Dependencies enthalten isOpen/pressed/round_id, damit der Listener
+  // immer die aktuelle handlePress-Closure nutzt statt eine veraltete einzufangen.
+  useEffect(() => {
+    if (!hotkey || recording) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.code !== hotkey || e.repeat) return
+      const target = e.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
+      e.preventDefault()
+      handlePress()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [hotkey, recording, isOpen, pressed, buzzerState?.round_id])
+
+  // Hotkey aufnehmen: nächster Tastendruck wird gespeichert, Escape bricht ab.
+  useEffect(() => {
+    if (!recording) return
+    function onKeyDown(e: KeyboardEvent) {
+      e.preventDefault()
+      if (e.code === 'Escape') {
+        setRecording(false)
+        return
+      }
+      localStorage.setItem(HOTKEY_STORAGE_KEY, e.code)
+      setHotkey(e.code)
+      setRecording(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [recording])
+
+  function clearHotkey() {
+    localStorage.removeItem(HOTKEY_STORAGE_KEY)
+    setHotkey(null)
+  }
+
+  if (!buzzerState) return null
+
+  const winnerId = buzzerState.winner_player_id
+  const iWon = winnerId === playerId
+  const someoneWon = winnerId !== null
+  const winnerName = someoneWon ? players.find((p) => p.id === winnerId)?.display_name : null
 
   let label = 'Warte auf Moderator…'
   if (isOpen && !pressed) label = 'BUZZER!'
@@ -41,7 +93,7 @@ export default function BuzzerButton({ roomId, playerId }: { roomId: string; pla
   else if (someoneWon) label = `${winnerName ?? 'Jemand'} war zuerst`
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center justify-center gap-3 shrink-0">
       <div
         className={`relative rounded-full p-3 transition-shadow duration-300 ${
           isOpen && !pressed ? 'shadow-[0_0_50px_10px_rgba(227,53,13,0.35)] animate-pulse' : ''
@@ -65,6 +117,20 @@ export default function BuzzerButton({ roomId, playerId }: { roomId: string; pla
         </div>
       </div>
       {error && <p className="text-poke-red-400 text-sm">{error}</p>}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setRecording(true)}
+          className="text-xs text-white/40 hover:text-white/80 underline"
+        >
+          {recording ? 'Taste drücken… (Esc = abbrechen)' : hotkey ? `Hotkey: ${formatKeyCode(hotkey)} (ändern)` : 'Hotkey festlegen'}
+        </button>
+        {hotkey && !recording && (
+          <button type="button" onClick={clearHotkey} className="text-xs text-white/30 hover:text-white/60 underline">
+            entfernen
+          </button>
+        )}
+      </div>
     </div>
   )
 }

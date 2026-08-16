@@ -75,13 +75,16 @@ export default function ActiveClipPlayer({ heightVh }: { heightVh: number }) {
 
   // height als konkrete vh-Einheit (nicht % eines Flex-Elternteils) ist immer "definit" --
   // dadurch berechnet aspect-ratio die Breite zuverlässig automatisch, ganz ohne die früher
-  // nötige Container-Query-Krücke. max-width fängt nur den seltenen Fall ab, dass die
-  // berechnete Breite den verfügbaren Platz sprengen würde (schmale Fenster).
+  // nötige Container-Query-Krücke. min(heightVh, 100%) deckelt zusätzlich auf die tatsächlich
+  // verfügbare Höhe der Zeile (setzt items-stretch beim Elternteil voraus, siehe Route-Dateien)
+  // -- sonst würde die Slider-Einstellung auf kurzen/kleinen Fenstern Geschwister wie den
+  // Buzzer aus dem Viewport drängen statt selbst zu schrumpfen. max-width fängt den Fall ab,
+  // dass die berechnete Breite den verfügbaren Platz sprengen würde (schmale Fenster).
   return (
-    <div className="w-full flex items-center justify-center">
+    <div className="w-full h-full flex items-center justify-center">
       <div
         className="bg-black rounded-2xl overflow-hidden flex items-center justify-center"
-        style={{ aspectRatio: '55 / 29', height: `${heightVh}vh`, width: 'auto', maxWidth: '100%' }}
+        style={{ aspectRatio: '55 / 29', height: `min(${heightVh}vh, 100%)`, width: 'auto', maxWidth: '100%' }}
       >
         {clipUrl ? (
           <video

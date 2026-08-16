@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { updateRoomLayout } from '@/features/rooms/rooms'
+import { errorMessage } from '@/lib/errors'
 import { DEFAULT_ROOM_LAYOUT, type RoomLayoutSettings } from '@/store/quizStore'
 import Card from './Card'
 
 const FIELDS: { key: keyof RoomLayoutSettings; label: string; min: number; max: number; step: number; unit: string }[] = [
-  { key: 'camSize', label: 'Kamera-Größe', min: 140, max: 480, step: 10, unit: 'px' },
+  { key: 'camSize', label: 'Kamera-Größe', min: 140, max: 560, step: 10, unit: 'px' },
   { key: 'videoMaxHeight', label: 'Video-Größe', min: 20, max: 70, step: 2, unit: 'vh' },
 ]
 
 export default function LayoutSettingsPanel({ roomId, layout }: { roomId: string; layout: RoomLayoutSettings }) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(layout)
+  const [error, setError] = useState<string | null>(null)
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -22,13 +24,17 @@ export default function LayoutSettingsPanel({ roomId, layout }: { roomId: string
     setDraft(next)
     if (saveTimeout.current) clearTimeout(saveTimeout.current)
     saveTimeout.current = setTimeout(() => {
-      updateRoomLayout(roomId, next).catch(() => {})
+      updateRoomLayout(roomId, next)
+        .then(() => setError(null))
+        .catch((err) => setError(errorMessage(err, 'Speichern fehlgeschlagen.')))
     }, 300)
   }
 
   function handleReset() {
     setDraft(DEFAULT_ROOM_LAYOUT)
-    updateRoomLayout(roomId, DEFAULT_ROOM_LAYOUT).catch(() => {})
+    updateRoomLayout(roomId, DEFAULT_ROOM_LAYOUT)
+      .then(() => setError(null))
+      .catch((err) => setError(errorMessage(err, 'Speichern fehlgeschlagen.')))
   }
 
   return (
@@ -70,6 +76,7 @@ export default function LayoutSettingsPanel({ roomId, layout }: { roomId: string
                 />
               </label>
             ))}
+            {error && <p className="text-[11px] text-poke-red-400">{error}</p>}
             <p className="text-[10px] text-white/40">
               Seitenverhältnisse (16:9 Kameras, 55:29 Video) bleiben immer erhalten. Gilt live für alle Ansichten.
             </p>

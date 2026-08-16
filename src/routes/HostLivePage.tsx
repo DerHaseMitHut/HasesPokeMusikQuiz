@@ -11,6 +11,7 @@ import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
 import LayoutSettingsPanel from '@/components/ui/LayoutSettingsPanel'
 import PokeballWatermark from '@/components/ui/PokeballWatermark'
+import StaffLines from '@/components/ui/StaffLines'
 import Card from '@/components/ui/Card'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -190,18 +191,21 @@ export default function HostLivePage() {
         </div>
       </div>
 
-      <div className="grid gap-2 sm:gap-3 justify-center shrink-0" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}>
-        <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" isHost />
-        {players.map((player) => (
-          <CamTile
-            key={player.id}
-            vdoUrl={player.vdo_url}
-            label={player.display_name}
-            score={player.score}
-            highlighted={player.id === buzzerState?.winner_player_id}
-            onKick={() => handleKick(player.id, player.display_name)}
-          />
-        ))}
+      <div className="relative isolate shrink-0">
+        <StaffLines />
+        <div className="grid gap-2 sm:gap-3 justify-center" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}>
+          <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" isHost />
+          {players.map((player) => (
+            <CamTile
+              key={player.id}
+              vdoUrl={player.vdo_url}
+              label={player.display_name}
+              score={player.score}
+              highlighted={player.id === buzzerState?.winner_player_id}
+              onKick={() => handleKick(player.id, player.display_name)}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 flex items-center justify-center">

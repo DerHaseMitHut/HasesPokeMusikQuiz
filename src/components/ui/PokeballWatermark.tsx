@@ -1,23 +1,34 @@
 import PokeballIcon from './PokeballIcon'
-
-type Ball = { className: string }
+import chatotUrl from '@/assets/decor/chatot.png'
+import krawummsUrl from '@/assets/decor/krawumms.png'
+import rotomUrl from '@/assets/decor/rotom.png'
 
 // Dezentes Hintergrund-Wasserzeichen für die dichten Live-Screens (Host/Kandidat/OBS) --
-// mehrere Pokébälle in unterschiedlichen Größen/Ecken füllen die unvermeidbare Restfläche
-// neben Kameras/Video optisch, statt sie leer zu lassen. Bewusst sehr niedrige Opacity und
-// -z-10 + pointer-events-none, damit nichts mit den eigentlichen Inhalten konkurriert.
-const BALLS: Ball[] = [
-  'fixed -bottom-24 -right-24 w-[36vw] h-[36vw] max-w-[560px] max-h-[560px] opacity-[0.05] -rotate-12',
-  'fixed -top-28 -left-20 w-[26vw] h-[26vw] max-w-[400px] max-h-[400px] opacity-[0.04] rotate-[18deg]',
-  'fixed top-1/3 -right-16 w-[16vw] h-[16vw] max-w-[220px] max-h-[220px] opacity-[0.035] rotate-[-8deg]',
-  'fixed -bottom-16 left-[8vw] w-[13vw] h-[13vw] max-w-[170px] max-h-[170px] opacity-[0.035] rotate-[6deg]',
-].map((className) => ({ className }))
+// füllt die unvermeidbare Restfläche neben Kameras/Video optisch, statt sie leer zu lassen.
+// Bewusst sehr niedrige Opacity + pointer-events-none + -z-10, damit nichts mit den
+// eigentlichen Inhalten konkurriert.
+const BALLS = [
+  'fixed -bottom-24 -right-24 w-[30vw] h-[30vw] max-w-[460px] max-h-[460px] opacity-[0.05] -rotate-12',
+  'fixed -top-24 -left-16 w-[20vw] h-[20vw] max-w-[300px] max-h-[300px] opacity-[0.04] rotate-[18deg]',
+]
+
+// PNGs wurden vorab (scratchpad/strip_white.py) von weißem Hintergrund auf echte
+// Transparenz gebracht -- mix-blend-mode wäre hier falsch, da "multiply" auf dunklem
+// Untergrund alles Richtung Schwarz zieht statt es verschwinden zu lassen.
+const POKEMON = [
+  { src: chatotUrl, className: 'fixed -top-10 -right-14 w-[17vw] max-w-[230px] opacity-[0.14] rotate-[8deg]' },
+  { src: krawummsUrl, className: 'fixed -bottom-12 left-1/4 w-[15vw] max-w-[210px] opacity-[0.12] -rotate-6' },
+  { src: rotomUrl, className: 'fixed top-1/2 -left-10 w-[13vw] max-w-[190px] opacity-[0.14] -translate-y-1/2 rotate-[-10deg]' },
+]
 
 export default function PokeballWatermark() {
   return (
     <>
-      {BALLS.map((ball, i) => (
-        <PokeballIcon key={i} className={`pointer-events-none -z-10 ${ball.className}`} />
+      {BALLS.map((className, i) => (
+        <PokeballIcon key={`ball-${i}`} className={`pointer-events-none -z-10 ${className}`} />
+      ))}
+      {POKEMON.map((p, i) => (
+        <img key={`mon-${i}`} src={p.src} alt="" className={`pointer-events-none -z-10 ${p.className}`} />
       ))}
     </>
   )

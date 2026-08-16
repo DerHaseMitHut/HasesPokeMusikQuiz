@@ -7,6 +7,7 @@ import { useQuizStore } from '@/store/quizStore'
 import { updatePlayerVdoUrl } from '@/features/players/players'
 import CamTile from '@/components/ui/CamTile'
 import PokeballWatermark from '@/components/ui/PokeballWatermark'
+import StaffLines from '@/components/ui/StaffLines'
 import Button from '@/components/ui/Button'
 import BuzzerButton from '@/features/buzzer/BuzzerButton'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
@@ -109,19 +110,22 @@ export default function CandidatePlayPage() {
         </form>
       )}
 
-      <div
-        className="grid gap-2 sm:gap-3 justify-center shrink-0"
-        style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
-      >
-        <CamTile vdoUrl={room.vdo_url} label="Gastgeber" isHost />
-        {players.map((player) => (
-          <CamTile
-            key={player.id}
-            vdoUrl={player.vdo_url}
-            label={player.id === myPlayer.id ? `${player.display_name} (Du)` : player.display_name}
-            score={player.score}
-          />
-        ))}
+      <div className="relative isolate shrink-0">
+        <StaffLines />
+        <div
+          className="grid gap-2 sm:gap-3 justify-center"
+          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
+        >
+          <CamTile vdoUrl={room.vdo_url} label="Gastgeber" isHost />
+          {players.map((player) => (
+            <CamTile
+              key={player.id}
+              vdoUrl={player.vdo_url}
+              label={player.id === myPlayer.id ? `${player.display_name} (Du)` : player.display_name}
+              score={player.score}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 flex items-center justify-center">

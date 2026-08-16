@@ -5,6 +5,7 @@ import { errorMessage } from '@/lib/errors'
 import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
 import PokeballWatermark from '@/components/ui/PokeballWatermark'
+import StaffLines from '@/components/ui/StaffLines'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import PagePlaceholder from '@/components/ui/PagePlaceholder'
@@ -51,20 +52,23 @@ export default function ObsView() {
         <span className="text-white/30 text-sm">{room.name}</span>
       </div>
 
-      <div
-        className="grid gap-2 sm:gap-3 justify-center shrink-0"
-        style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
-      >
-        <CamTile vdoUrl={room.vdo_url} label="Gastgeber" isHost />
-        {sorted.map((player) => (
-          <CamTile
-            key={player.id}
-            vdoUrl={player.vdo_url}
-            label={player.display_name}
-            score={player.score}
-            highlighted={player.id === buzzerState?.winner_player_id}
-          />
-        ))}
+      <div className="relative isolate shrink-0">
+        <StaffLines />
+        <div
+          className="grid gap-2 sm:gap-3 justify-center"
+          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
+        >
+          <CamTile vdoUrl={room.vdo_url} label="Gastgeber" isHost />
+          {sorted.map((player) => (
+            <CamTile
+              key={player.id}
+              vdoUrl={player.vdo_url}
+              label={player.display_name}
+              score={player.score}
+              highlighted={player.id === buzzerState?.winner_player_id}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 flex items-center justify-center">

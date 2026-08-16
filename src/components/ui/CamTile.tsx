@@ -65,14 +65,18 @@ export default function CamTile({
         )}
       </div>
 
-      <div className="glossy rounded-lg bg-stage-800/95 border border-white/10 px-2.5 py-1.5 flex items-center gap-2 shrink-0">
+      <div className="glossy rounded-lg bg-stage-800/95 border border-white/10 px-3 py-2 flex items-center gap-2.5 shrink-0">
         <span
-          className={`w-6 h-6 rounded-full bg-gradient-to-br ${avatarGradient(label, Boolean(isHost))} flex items-center justify-center text-[11px] font-display font-800 text-white shrink-0`}
+          className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(label, Boolean(isHost))} flex items-center justify-center text-sm font-display font-800 text-white shrink-0`}
         >
           {label.slice(0, 1).toUpperCase()}
         </span>
-        <span className="flex-1 truncate font-700 text-sm">{label}</span>
-        {score !== undefined && <span className="font-display font-700 text-poke-yellow-400 shrink-0">{score}</span>}
+        <span className="flex-1 truncate text-center font-700 text-base">{label}</span>
+        {score !== undefined ? (
+          <span className="font-display font-700 text-lg text-poke-yellow-400 shrink-0 w-9 text-center">{score}</span>
+        ) : (
+          <span className="w-9 shrink-0" aria-hidden="true" />
+        )}
       </div>
     </div>
   )

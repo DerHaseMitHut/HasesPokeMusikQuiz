@@ -42,33 +42,35 @@ export default function CamTile({
   return (
     <div className="flex flex-col gap-1.5 sm:gap-2">
       <div
-        className={`relative aspect-video w-full rounded-xl overflow-hidden bg-stage-900 border transition-shadow duration-300 ${
-          highlighted ? 'border-poke-yellow-400 shadow-[var(--shadow-glow-yellow)]' : 'border-white/10'
+        className={`relative aspect-video w-full rounded-xl p-[1.5px] transition-shadow duration-300 ${
+          highlighted ? 'bg-gradient-to-br from-poke-yellow-300 to-poke-yellow-500 shadow-[var(--shadow-glow-yellow)]' : 'holo-border'
         }`}
       >
-        {url ? (
-          <iframe src={url} className="w-full h-full" allow="camera;microphone;autoplay;fullscreen;display-capture" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">Keine Kamera</div>
-        )}
+        <div className="relative w-full h-full rounded-[10px] overflow-hidden bg-stage-900">
+          {url ? (
+            <iframe src={url} className="w-full h-full" allow="camera;microphone;autoplay;fullscreen;display-capture" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">Keine Kamera</div>
+          )}
 
-        {url && (
-          <span className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-display font-700 tracking-wide text-poke-red-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-poke-red-500 live-dot" />
-            LIVE
-          </span>
-        )}
+          {url && (
+            <span className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-display font-700 tracking-wide text-poke-red-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-poke-red-500 live-dot" />
+              LIVE
+            </span>
+          )}
 
-        {onKick && (
-          <button
-            type="button"
-            onClick={onKick}
-            title="Kandidat entfernen"
-            className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 hover:bg-poke-red-500 text-white/70 hover:text-white text-sm leading-none transition-colors"
-          >
-            ×
-          </button>
-        )}
+          {onKick && (
+            <button
+              type="button"
+              onClick={onKick}
+              title="Kandidat entfernen"
+              className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 hover:bg-poke-red-500 text-white/70 hover:text-white text-sm leading-none transition-colors"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="glossy rounded-lg bg-stage-800/95 border border-white/10 px-3 py-2 flex items-center gap-2.5 shrink-0">

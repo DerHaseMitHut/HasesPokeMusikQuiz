@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { listSongsForRoom, type Song } from '@/features/songs/songs'
 import { errorMessage } from '@/lib/errors'
@@ -27,6 +27,7 @@ export default function HostLivePage() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [obsLinkCopied, setObsLinkCopied] = useState(false)
 
   const { players, playbackState, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
 
@@ -158,6 +159,16 @@ export default function HostLivePage() {
     }
   }
 
+  async function handleCopyObsLink() {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/obs/${room!.code}?token=${room!.obs_token}`)
+      setObsLinkCopied(true)
+      setTimeout(() => setObsLinkCopied(false), 1500)
+    } catch {
+      setError('Link konnte nicht kopiert werden.')
+    }
+  }
+
   async function handleKick(playerId: string, displayName: string) {
     if (!window.confirm(`${displayName} aus dem Raum entfernen?`)) return
     setBusy(true)
@@ -184,6 +195,12 @@ export default function HostLivePage() {
         </div>
         {error && <p className="text-poke-red-400 text-xs truncate">{error}</p>}
         <div className="flex items-center gap-3 shrink-0">
+          <Link to={`/host/${room.code}/setup`} className="text-white/40 hover:text-white/80 text-xs underline">
+            Setup
+          </Link>
+          <button type="button" onClick={handleCopyObsLink} className="text-white/40 hover:text-white/80 text-xs underline">
+            {obsLinkCopied ? 'OBS-Link kopiert!' : 'OBS-Link kopieren'}
+          </button>
           <p className="text-white/40 text-xs">
             Raumcode <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
           </p>

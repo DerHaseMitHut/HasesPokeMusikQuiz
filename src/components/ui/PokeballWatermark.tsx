@@ -7,10 +7,14 @@ import rotomUrl from '@/assets/decor/rotom.png'
 // füllt die unvermeidbare Restfläche neben Kameras/Video optisch, statt sie leer zu lassen.
 // Bewusst sehr niedrige Opacity + pointer-events-none + -z-10, damit nichts mit den
 // eigentlichen Inhalten konkurriert.
-// Der zweite (große) Pokeball sitzt bewusst nicht mehr hier -- er wird jetzt zentriert
-// hinter dem Buzzer gerendert (siehe BuzzerButton.tsx), damit er dem Buzzer folgt statt an
-// einer festen Bildschirmposition zu raten und mit Plaudagei zu kollidieren.
-const BALLS = ['fixed -top-24 -left-16 w-[20vw] h-[20vw] max-w-[300px] max-h-[300px] opacity-[0.04] rotate-[18deg]']
+// Ein weiterer Pokeball sitzt zusätzlich zentriert hinter dem Buzzer (siehe BuzzerButton.tsx)
+// und folgt damit dem Buzzer statt an einer festen Bildschirmposition zu raten -- das ersetzt
+// nicht diese beiden hier, die generell in allen drei Ansichten (Host/Kandidat/OBS) sichtbar
+// bleiben sollen, auch dort, wo es keinen Buzzer gibt.
+const BALLS = [
+  'fixed -top-24 -left-16 w-[20vw] h-[20vw] max-w-[300px] max-h-[300px] opacity-[0.04] rotate-[18deg]',
+  'fixed top-[62%] -right-20 w-[22vw] h-[22vw] max-w-[320px] max-h-[320px] opacity-[0.045] -translate-y-1/2 rotate-[-15deg]',
+]
 
 // PNGs haben bereits einen echten Alpha-Kanal (transparent) -- reine Opacity reicht, kein
 // mix-blend-mode nötig (der würde auf dunklem Untergrund ohnehin alles Richtung Schwarz ziehen).

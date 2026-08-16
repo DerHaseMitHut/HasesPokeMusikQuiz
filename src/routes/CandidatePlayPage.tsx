@@ -10,6 +10,7 @@ import PokeballWatermark from '@/components/ui/PokeballWatermark'
 import StaffLines from '@/components/ui/StaffLines'
 import Button from '@/components/ui/Button'
 import BuzzerButton from '@/features/buzzer/BuzzerButton'
+import { useBuzzerHotkey, formatKeyCode } from '@/features/buzzer/useBuzzerHotkey'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import PagePlaceholder from '@/components/ui/PagePlaceholder'
@@ -26,6 +27,7 @@ export default function CandidatePlayPage() {
   const [editingVdoUrl, setEditingVdoUrl] = useState(false)
   const [savingVdoUrl, setSavingVdoUrl] = useState(false)
   const [vdoUrlError, setVdoUrlError] = useState<string | null>(null)
+  const { hotkey, recording, startRecording, clearHotkey } = useBuzzerHotkey()
 
   useEffect(() => {
     if (!roomCode) return
@@ -88,6 +90,14 @@ export default function CandidatePlayPage() {
           <button type="button" onClick={() => setEditingVdoUrl((v) => !v)} className="underline hover:text-white/80 mr-3">
             Kamera-Link
           </button>
+          <button type="button" onClick={startRecording} className="underline hover:text-white/80 mr-3">
+            {recording ? 'Taste drücken… (Esc)' : hotkey ? `Hotkey: ${formatKeyCode(hotkey)} (ändern)` : 'Hotkey festlegen'}
+          </button>
+          {hotkey && !recording && (
+            <button type="button" onClick={clearHotkey} className="underline hover:text-white/80 mr-3">
+              entfernen
+            </button>
+          )}
           Raumcode <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
         </p>
       </div>
@@ -135,7 +145,7 @@ export default function CandidatePlayPage() {
             selbst tut das --, daher bleibt dieser Wert unabhängig von der Pokeball-Größe. */}
         <div className="w-[11.75rem] shrink-0" aria-hidden="true" />
         <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
-        <BuzzerButton roomId={room.id} playerId={myPlayer.id} />
+        <BuzzerButton roomId={room.id} playerId={myPlayer.id} hotkey={hotkey} hotkeyRecording={recording} />
       </div>
     </div>
   )

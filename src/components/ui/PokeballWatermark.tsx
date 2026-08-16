@@ -12,13 +12,12 @@ const BALLS = [
   'fixed -top-24 -left-16 w-[20vw] h-[20vw] max-w-[300px] max-h-[300px] opacity-[0.04] rotate-[18deg]',
 ]
 
-// PNGs wurden vorab (scratchpad/strip_white.py) von weißem Hintergrund auf echte
-// Transparenz gebracht -- mix-blend-mode wäre hier falsch, da "multiply" auf dunklem
-// Untergrund alles Richtung Schwarz zieht statt es verschwinden zu lassen.
+// PNGs haben bereits einen echten Alpha-Kanal (transparent) -- reine Opacity reicht, kein
+// mix-blend-mode nötig (der würde auf dunklem Untergrund ohnehin alles Richtung Schwarz ziehen).
 const POKEMON = [
-  { src: chatotUrl, className: 'fixed -top-10 -right-14 w-[17vw] max-w-[230px] opacity-[0.14] rotate-[8deg]' },
-  { src: krawummsUrl, className: 'fixed -bottom-12 left-1/4 w-[15vw] max-w-[210px] opacity-[0.12] -rotate-6' },
-  { src: rotomUrl, className: 'fixed top-1/2 -left-10 w-[13vw] max-w-[190px] opacity-[0.14] -translate-y-1/2 rotate-[-10deg]' },
+  { src: chatotUrl, className: 'fixed -bottom-14 -right-16 w-[25.5vw] max-w-[345px] opacity-[0.14] rotate-[10deg]' },
+  { src: krawummsUrl, className: 'fixed -bottom-12 -left-8 w-[22.5vw] max-w-[315px] opacity-[0.12] -rotate-6' },
+  { src: rotomUrl, className: 'fixed top-1/2 -left-10 w-[19.5vw] max-w-[285px] opacity-[0.14] -translate-y-1/2 rotate-[-10deg]' },
 ]
 
 export default function PokeballWatermark() {

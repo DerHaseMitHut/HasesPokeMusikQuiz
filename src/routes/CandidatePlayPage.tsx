@@ -80,11 +80,10 @@ export default function CandidatePlayPage() {
       <PokeballWatermark hideRightBall />
       <div className="flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="font-display font-800 text-sm tracking-tight shrink-0">
-            <span className="text-poke-yellow-400">Musik</span>
+          <span className="font-display font-800 text-xl tracking-tight shrink-0">
+            <span className="text-poke-yellow-400">PokéMusik</span>
             <span className="text-poke-red-500">Quiz</span>
           </span>
-          <span className="text-white/30 text-xs truncate">{room.name}</span>
         </div>
         <p className="text-white/40 text-xs shrink-0">
           <button type="button" onClick={() => setEditingVdoUrl((v) => !v)} className="underline hover:text-white/80 mr-3">

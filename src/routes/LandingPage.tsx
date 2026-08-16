@@ -9,7 +9,7 @@ export default function LandingPage() {
       <div className="mb-6 flex items-center gap-4">
         <PokeballIcon className="h-14 w-14 sm:h-16 sm:w-16 drop-shadow-[0_0_18px_rgba(255,203,5,0.45)]" />
         <h1 className="font-display text-5xl sm:text-6xl font-800 tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
-          <span className="text-poke-yellow-400">Musik</span>
+          <span className="text-poke-yellow-400">PokéMusik</span>
           <span className="text-poke-red-500">Quiz</span>
         </h1>
       </div>

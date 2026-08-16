@@ -129,6 +129,9 @@ export default function CandidatePlayPage() {
       </div>
 
       <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4 sm:gap-8">
+        {/* Spacer in Buzzer-Breite (h-36 Knopf + Padding-Ringe = 11.75rem), damit das Video
+            trotz des Buzzers rechts daneben optisch mittig bleibt, statt nach links zu rutschen. */}
+        <div className="w-[11.75rem] shrink-0" aria-hidden="true" />
         <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
         <BuzzerButton roomId={room.id} playerId={myPlayer.id} />
       </div>

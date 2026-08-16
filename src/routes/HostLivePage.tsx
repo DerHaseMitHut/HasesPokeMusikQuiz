@@ -8,16 +8,15 @@ import { awardPoints, kickPlayer } from '@/features/players/players'
 import { loadSong, setPlaying, showSolution } from '@/features/playback/playback'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
 import { useQuizStore } from '@/store/quizStore'
-import Scoreboard from '@/components/ui/Scoreboard'
 import CamTile from '@/components/ui/CamTile'
-import MusicStaff from '@/components/ui/MusicStaff'
 import LayoutSettingsPanel from '@/components/ui/LayoutSettingsPanel'
 import Card from '@/components/ui/Card'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import PagePlaceholder from '@/components/ui/PagePlaceholder'
 
-const PANEL_BTN = 'glossy font-display font-700 rounded-lg transition-all duration-150 active:translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none px-4 py-2 text-sm'
+const PANEL_BTN =
+  'glossy font-display font-700 rounded-lg transition-all duration-150 active:translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none px-4 py-2 text-sm'
 
 export default function HostLivePage() {
   const { roomCode } = useParams<{ roomCode: string }>()
@@ -59,9 +58,7 @@ export default function HostLivePage() {
   if (room === undefined) return <LoadingScreen />
   if (room === null) return <PagePlaceholder title="Raum nicht gefunden" note={`Kein Raum mit Code „${roomCode}“.`} />
 
-  const winner = buzzerState?.winner_player_id
-    ? players.find((p) => p.id === buzzerState.winner_player_id)
-    : null
+  const winner = buzzerState?.winner_player_id ? players.find((p) => p.id === buzzerState.winner_player_id) : null
   const currentSong = songs.find((s) => s.id === playbackState?.current_song_id) ?? null
 
   async function handleOpen() {
@@ -89,6 +86,7 @@ export default function HostLivePage() {
   }
 
   async function handleLoadSong(songId: string) {
+    if (!songId) return
     setBusy(true)
     setError(null)
     try {
@@ -174,152 +172,126 @@ export default function HostLivePage() {
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden p-3 sm:p-4 gap-2 sm:gap-3">
       <div className="flex items-center justify-between shrink-0 gap-3">
-        <h1 className="font-display text-lg sm:text-xl font-800 leading-tight">{room.name}</h1>
-        {error && <p className="text-poke-red-400 text-xs">{error}</p>}
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="font-display font-800 text-sm tracking-tight shrink-0">
+            <span className="text-poke-yellow-400">Musik</span>
+            <span className="text-poke-red-500">Quiz</span>
+          </span>
+          <span className="text-white/30 text-xs truncate">{room.name}</span>
+        </div>
+        {error && <p className="text-poke-red-400 text-xs truncate">{error}</p>}
         <div className="flex items-center gap-3 shrink-0">
           <p className="text-white/40 text-xs">
-            Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
+            Raumcode <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
           </p>
           <LayoutSettingsPanel roomId={room.id} layout={roomLayout} />
         </div>
       </div>
 
-      <div className="shrink-0 relative">
-        <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 w-full pointer-events-none" />
-        <div
-          className="relative grid gap-2 sm:gap-3 justify-center"
-          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
-        >
-          <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" />
-          {players.map((player) => (
-            <CamTile
-              key={player.id}
-              vdoUrl={player.vdo_url}
-              label={player.display_name}
-              score={player.score}
-              highlighted={player.id === buzzerState?.winner_player_id}
-              onKick={() => handleKick(player.id, player.display_name)}
-            />
-          ))}
-        </div>
+      <div className="grid gap-2 sm:gap-3 justify-center shrink-0" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}>
+        <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" isHost />
+        {players.map((player) => (
+          <CamTile
+            key={player.id}
+            vdoUrl={player.vdo_url}
+            label={player.display_name}
+            score={player.score}
+            highlighted={player.id === buzzerState?.winner_player_id}
+            onKick={() => handleKick(player.id, player.display_name)}
+          />
+        ))}
       </div>
 
-      <div className="flex-1 flex gap-2 sm:gap-3 min-h-0">
-        <Card className="shrink-0 min-h-0" style={{ width: roomLayout.sidebarWidth }}>
-          <div className="p-3 flex flex-col gap-2 h-full min-h-0">
-            <h2 className="font-display text-sm font-700 text-white/70 shrink-0">Songs ({songs.length})</h2>
-            <ul className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1.5">
+      <div className="flex-1 min-h-0 flex items-center justify-center">
+        <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
+      </div>
+
+      <Card className="shrink-0">
+        <div className="p-3 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0">
+            <select
+              value={playbackState?.current_song_id ?? ''}
+              onChange={(e) => handleLoadSong(e.target.value)}
+              disabled={busy || songs.length === 0}
+              className="rounded-lg bg-stage-900/80 border border-stage-600 px-3 py-2 text-sm outline-none focus:border-poke-yellow-400 disabled:opacity-50 max-w-[220px]"
+            >
+              <option value="" disabled>
+                {songs.length === 0 ? 'Keine Songs' : 'Song wählen…'}
+              </option>
               {songs.map((song) => (
-                <li
-                  key={song.id}
-                  className={`rounded-lg px-2.5 py-1.5 text-sm transition-colors ${
-                    song.id === playbackState?.current_song_id ? 'bg-poke-blue-600/20' : 'bg-stage-900/70'
-                  }`}
-                >
-                  <p className="truncate">{song.title}</p>
-                  <button
-                    type="button"
-                    onClick={() => handleLoadSong(song.id)}
-                    disabled={busy}
-                    className="text-xs font-700 text-poke-blue-400 hover:text-poke-blue-300 disabled:opacity-50"
-                  >
-                    Laden
-                  </button>
-                </li>
+                <option key={song.id} value={song.id}>
+                  {song.title}
+                </option>
               ))}
-              {songs.length === 0 && <p className="text-white/50 text-xs">Keine Songs in diesem Raum.</p>}
-            </ul>
-          </div>
-        </Card>
-
-        <div className="flex-1 min-w-0 flex flex-col gap-2 sm:gap-3 min-h-0">
-          <div className="flex items-center justify-between shrink-0 gap-2">
-            <p className="font-700 text-sm truncate">
-              {currentSong ? currentSong.title : 'Kein Song geladen'}
-              {playbackState?.current_clip === 'solution' && <span className="text-poke-yellow-400"> — Lösung</span>}
-            </p>
-            <div className="flex gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={handleTogglePlay}
-                disabled={busy || !playbackState?.current_song_id}
-                className={`${PANEL_BTN} bg-gradient-to-b from-poke-blue-400 to-poke-blue-600 text-white hover:brightness-110`}
-              >
-                {playbackState?.is_playing ? 'Pause' : 'Play'}
-              </button>
-              <button
-                type="button"
-                onClick={handleShowSolution}
-                disabled={busy || !playbackState?.current_song_id || playbackState.current_clip === 'solution'}
-                className={`${PANEL_BTN} bg-gradient-to-b from-poke-yellow-300 to-poke-yellow-500 text-stage-950 hover:brightness-105`}
-              >
-                Lösung zeigen
-              </button>
-            </div>
-          </div>
-
-          <div className="flex-1 min-h-0 min-w-0" style={{ maxHeight: `${roomLayout.videoMaxHeight}vh` }}>
-            <ActiveClipPlayer />
-          </div>
-
-          <Card className="shrink-0">
-            <div className="p-3 flex items-center justify-between gap-3 flex-wrap">
-              <p className="text-white/70 text-sm flex items-center gap-2">
-                {buzzerState?.is_open && <span className="w-2 h-2 rounded-full bg-poke-red-500 live-dot" />}
-                {buzzerState?.is_open
-                  ? 'Buzzer offen'
-                  : winner
-                    ? `${winner.display_name} war zuerst!`
+            </select>
+            <p className="text-white/60 text-sm hidden sm:flex items-center gap-2 truncate">
+              {buzzerState?.is_open && <span className="w-2 h-2 rounded-full bg-poke-red-500 live-dot shrink-0" />}
+              {buzzerState?.is_open
+                ? 'Buzzer offen'
+                : winner
+                  ? `${winner.display_name} war zuerst!`
+                  : playbackState?.current_clip === 'solution'
+                    ? 'Lösung'
                     : 'Buzzer geschlossen'}
-              </p>
+            </p>
+          </div>
 
-              <div className="flex gap-2 flex-wrap">
-                {winner && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleCorrect}
-                      disabled={busy || !currentSong}
-                      className={`${PANEL_BTN} bg-gradient-to-b from-poke-yellow-300 to-note-green text-stage-950 hover:brightness-105`}
-                    >
-                      Richtig{currentSong ? ` (+${currentSong.points})` : ''}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleWrong}
-                      disabled={busy}
-                      className={`${PANEL_BTN} bg-stage-700 text-white/90 hover:bg-stage-600`}
-                    >
-                      Falsch
-                    </button>
-                  </>
-                )}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleTogglePlay}
+              disabled={busy || !playbackState?.current_song_id}
+              className={`${PANEL_BTN} bg-gradient-to-b from-poke-blue-400 to-poke-blue-600 text-white hover:brightness-110`}
+            >
+              {playbackState?.is_playing ? 'Pause' : 'Play'}
+            </button>
+            <button
+              type="button"
+              onClick={handleShowSolution}
+              disabled={busy || !playbackState?.current_song_id || playbackState.current_clip === 'solution'}
+              className={`${PANEL_BTN} bg-gradient-to-b from-poke-yellow-300 to-poke-yellow-500 text-stage-950 hover:brightness-105`}
+            >
+              Lösung zeigen
+            </button>
+            {winner && (
+              <>
                 <button
                   type="button"
-                  onClick={handleOpen}
-                  disabled={busy || buzzerState?.is_open}
-                  className={`${PANEL_BTN} bg-gradient-to-b from-poke-red-400 to-poke-red-600 text-white hover:brightness-110`}
+                  onClick={handleCorrect}
+                  disabled={busy || !currentSong}
+                  className={`${PANEL_BTN} bg-gradient-to-b from-poke-yellow-300 to-note-green text-stage-950 hover:brightness-105`}
                 >
-                  Buzzer öffnen
+                  Richtig{currentSong ? ` (+${currentSong.points})` : ''}
                 </button>
                 <button
                   type="button"
-                  onClick={handleClose}
-                  disabled={busy || !buzzerState?.is_open}
+                  onClick={handleWrong}
+                  disabled={busy}
                   className={`${PANEL_BTN} bg-stage-700 text-white/90 hover:bg-stage-600`}
                 >
-                  Schließen
+                  Falsch
                 </button>
-              </div>
-            </div>
-          </Card>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={handleOpen}
+              disabled={busy || buzzerState?.is_open}
+              className={`${PANEL_BTN} bg-gradient-to-b from-poke-red-400 to-poke-red-600 text-white hover:brightness-110`}
+            >
+              Buzzer öffnen
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={busy || !buzzerState?.is_open}
+              className={`${PANEL_BTN} bg-stage-700 text-white/90 hover:bg-stage-600`}
+            >
+              Schließen
+            </button>
+          </div>
         </div>
-
-        <div className="shrink-0 min-h-0 flex flex-col gap-2 overflow-y-auto" style={{ width: roomLayout.scoreboardWidth }}>
-          <h2 className="font-display text-base font-700 text-white/70 shrink-0">Kandidaten ({players.length})</h2>
-          <Scoreboard players={players} winnerPlayerId={buzzerState?.winner_player_id} />
-        </div>
-      </div>
+      </Card>
     </div>
   )
 }

@@ -4,7 +4,6 @@ import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { errorMessage } from '@/lib/errors'
 import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
-import MusicStaff from '@/components/ui/MusicStaff'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import PagePlaceholder from '@/components/ui/PagePlaceholder'
@@ -36,36 +35,33 @@ export default function ObsView() {
   const sorted = [...players].sort((a, b) => b.score - a.score)
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden gap-2 p-3">
-      <div className="flex items-center gap-2 px-1 shrink-0">
-        <span className="font-display font-800 text-lg tracking-tight">
+    <div className="h-screen w-screen flex flex-col overflow-hidden p-3 gap-2">
+      <div className="flex items-center gap-2 shrink-0">
+        <span className="font-display font-800 text-base tracking-tight">
           <span className="text-poke-yellow-400">Musik</span>
           <span className="text-poke-red-500">Quiz</span>
         </span>
-        <span className="text-white/40 text-sm">— {room.name}</span>
+        <span className="text-white/30 text-sm">{room.name}</span>
       </div>
 
-      <div className="shrink-0 relative">
-        <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 w-full pointer-events-none" />
-        <div
-          className="relative grid gap-2 justify-center"
-          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
-        >
-          <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
-          {sorted.map((player) => (
-            <CamTile
-              key={player.id}
-              vdoUrl={player.vdo_url}
-              label={player.display_name}
-              score={player.score}
-              highlighted={player.id === buzzerState?.winner_player_id}
-            />
-          ))}
-        </div>
+      <div
+        className="grid gap-2 sm:gap-3 justify-center shrink-0"
+        style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
+      >
+        <CamTile vdoUrl={room.vdo_url} label="Gastgeber" isHost />
+        {sorted.map((player) => (
+          <CamTile
+            key={player.id}
+            vdoUrl={player.vdo_url}
+            label={player.display_name}
+            score={player.score}
+            highlighted={player.id === buzzerState?.winner_player_id}
+          />
+        ))}
       </div>
 
-      <div className="flex-1 min-h-0 min-w-0">
-        <ActiveClipPlayer />
+      <div className="flex-1 min-h-0 flex items-center justify-center">
+        <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
       </div>
     </div>
   )

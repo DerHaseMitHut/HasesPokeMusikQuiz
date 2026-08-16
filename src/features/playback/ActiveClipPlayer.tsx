@@ -8,7 +8,7 @@ const DRIFT_SOFT_SECONDS = 0.05
 const SYNC_INTERVAL_MS = 2000
 const OFFSET_REFRESH_MS = 60_000
 
-export default function ActiveClipPlayer() {
+export default function ActiveClipPlayer({ heightVh }: { heightVh: number }) {
   const playbackState = useQuizStore((s) => s.playbackState)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const playbackRef = useRef<PlaybackStateRow | null>(playbackState)
@@ -73,20 +73,15 @@ export default function ActiveClipPlayer() {
     if (state.is_playing) video.play().catch(() => {})
   }
 
-  // aspect-ratio allein reicht nicht: bei einem flex-Kind mit unbestimmter Breite UND Höhe
-  // greift der Seitenverhältnis-Constraint erst, wenn genau eine Dimension feststeht. Per
-  // Container-Query-Einheiten (bezogen auf dieses Wrapper-Element, containerType: 'size')
-  // lässt sich "größtmögliche 55:29-Box, die in die verfügbare Fläche passt" ohne JS lösen —
-  // min() wählt automatisch die limitierende Dimension (Breite oder Höhe).
+  // height als konkrete vh-Einheit (nicht % eines Flex-Elternteils) ist immer "definit" --
+  // dadurch berechnet aspect-ratio die Breite zuverlässig automatisch, ganz ohne die früher
+  // nötige Container-Query-Krücke. max-width fängt nur den seltenen Fall ab, dass die
+  // berechnete Breite den verfügbaren Platz sprengen würde (schmale Fenster).
   return (
-    <div className="w-full h-full flex items-center justify-center" style={{ containerType: 'size' }}>
+    <div className="w-full flex items-center justify-center">
       <div
         className="bg-black rounded-2xl overflow-hidden flex items-center justify-center"
-        style={{
-          aspectRatio: '55 / 29',
-          width: 'min(100%, calc(100cqh * 55 / 29))',
-          height: 'min(100%, calc(100cqw * 29 / 55))',
-        }}
+        style={{ aspectRatio: '55 / 29', height: `${heightVh}vh`, width: 'auto', maxWidth: '100%' }}
       >
         {clipUrl ? (
           <video

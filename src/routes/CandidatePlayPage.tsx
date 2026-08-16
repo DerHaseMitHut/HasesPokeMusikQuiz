@@ -6,9 +6,7 @@ import { useAuthStore } from '@/features/auth/authStore'
 import { useQuizStore } from '@/store/quizStore'
 import { updatePlayerVdoUrl } from '@/features/players/players'
 import CamTile from '@/components/ui/CamTile'
-import MusicStaff from '@/components/ui/MusicStaff'
 import Button from '@/components/ui/Button'
-import Scoreboard from '@/components/ui/Scoreboard'
 import BuzzerButton from '@/features/buzzer/BuzzerButton'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -75,19 +73,19 @@ export default function CandidatePlayPage() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden p-3 sm:p-4 gap-2 sm:gap-3">
-      <div className="flex items-center justify-between shrink-0">
-        <div>
-          <h1 className="font-display text-lg sm:text-xl font-800 leading-tight">{room.name}</h1>
-          <p className="text-white/50 text-xs">
-            Angemeldet als <span className="text-poke-yellow-400 font-700">{myPlayer.display_name}</span>
-            {' · '}
-            <button type="button" onClick={() => setEditingVdoUrl((v) => !v)} className="underline hover:text-white/80">
-              Kamera-Link
-            </button>
-          </p>
+      <div className="flex items-center justify-between shrink-0 gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="font-display font-800 text-sm tracking-tight shrink-0">
+            <span className="text-poke-yellow-400">Musik</span>
+            <span className="text-poke-red-500">Quiz</span>
+          </span>
+          <span className="text-white/30 text-xs truncate">{room.name}</span>
         </div>
         <p className="text-white/40 text-xs shrink-0">
-          Raumcode: <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
+          <button type="button" onClick={() => setEditingVdoUrl((v) => !v)} className="underline hover:text-white/80 mr-3">
+            Kamera-Link
+          </button>
+          Raumcode <span className="font-mono tracking-widest text-poke-yellow-400">{room.code}</span>
         </p>
       </div>
 
@@ -109,38 +107,27 @@ export default function CandidatePlayPage() {
         </form>
       )}
 
-      <div className="shrink-0 relative">
-        <MusicStaff className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 w-full pointer-events-none" />
-        <div
-          className="relative grid gap-3 sm:gap-4 justify-center"
-          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
-        >
-          <CamTile vdoUrl={room.vdo_url} label="Gastgeber" />
-          {players.map((player) => (
-            <CamTile
-              key={player.id}
-              vdoUrl={player.vdo_url}
-              label={player.id === myPlayer.id ? `${player.display_name} (Du)` : player.display_name}
-              score={player.score}
-            />
-          ))}
-        </div>
+      <div
+        className="grid gap-2 sm:gap-3 justify-center shrink-0"
+        style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
+      >
+        <CamTile vdoUrl={room.vdo_url} label="Gastgeber" isHost />
+        {players.map((player) => (
+          <CamTile
+            key={player.id}
+            vdoUrl={player.vdo_url}
+            label={player.id === myPlayer.id ? `${player.display_name} (Du)` : player.display_name}
+            score={player.score}
+          />
+        ))}
       </div>
 
-      <div className="flex-1 flex gap-2 sm:gap-3 min-h-0">
-        <div className="flex-[2] min-w-0 flex flex-col gap-2 sm:gap-3 min-h-0">
-          <div className="flex-1 min-h-0 min-w-0" style={{ maxHeight: `${roomLayout.videoMaxHeight}vh` }}>
-            <ActiveClipPlayer />
-          </div>
-          <div className="shrink-0 flex justify-center">
-            <BuzzerButton roomId={room.id} playerId={myPlayer.id} />
-          </div>
-        </div>
+      <div className="flex-1 min-h-0 flex items-center justify-center">
+        <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
+      </div>
 
-        <div className="shrink-0 min-h-0 flex flex-col gap-2 overflow-y-auto" style={{ width: roomLayout.scoreboardWidth }}>
-          <h2 className="font-display text-base font-700 text-white/70 shrink-0">Punktestand</h2>
-          <Scoreboard players={players} highlightPlayerId={myPlayer.id} />
-        </div>
+      <div className="shrink-0 flex justify-center">
+        <BuzzerButton roomId={room.id} playerId={myPlayer.id} />
       </div>
     </div>
   )

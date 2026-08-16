@@ -36,15 +36,11 @@ export interface BuzzerStateRow {
 export interface RoomLayoutSettings {
   camSize: number // px, Zielbreite je Kamera-Kachel
   videoMaxHeight: number // vh, Deckelhöhe des Videobereichs
-  sidebarWidth: number // px, Songlisten-Breite (nur Host-Ansicht)
-  scoreboardWidth: number // px, Punktestand-Breite
 }
 
 export const DEFAULT_ROOM_LAYOUT: RoomLayoutSettings = {
-  camSize: 320,
-  videoMaxHeight: 34,
-  sidebarWidth: 260,
-  scoreboardWidth: 320,
+  camSize: 300,
+  videoMaxHeight: 48,
 }
 
 interface QuizState {

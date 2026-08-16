@@ -5,20 +5,10 @@ import Card from './Card'
 
 const FIELDS: { key: keyof RoomLayoutSettings; label: string; min: number; max: number; step: number; unit: string }[] = [
   { key: 'camSize', label: 'Kamera-Größe', min: 140, max: 480, step: 10, unit: 'px' },
-  { key: 'videoMaxHeight', label: 'Video-Höhe', min: 20, max: 70, step: 2, unit: 'vh' },
-  { key: 'sidebarWidth', label: 'Songlisten-Breite', min: 160, max: 420, step: 10, unit: 'px' },
-  { key: 'scoreboardWidth', label: 'Punkteliste-Breite', min: 200, max: 480, step: 10, unit: 'px' },
+  { key: 'videoMaxHeight', label: 'Video-Größe', min: 20, max: 70, step: 2, unit: 'vh' },
 ]
 
-export default function LayoutSettingsPanel({
-  roomId,
-  layout,
-  includeSidebar = true,
-}: {
-  roomId: string
-  layout: RoomLayoutSettings
-  includeSidebar?: boolean
-}) {
+export default function LayoutSettingsPanel({ roomId, layout }: { roomId: string; layout: RoomLayoutSettings }) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(layout)
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -60,7 +50,7 @@ export default function LayoutSettingsPanel({
                 Zurücksetzen
               </button>
             </div>
-            {FIELDS.filter((f) => includeSidebar || f.key !== 'sidebarWidth').map((field) => (
+            {FIELDS.map((field) => (
               <label key={field.key} className="flex flex-col gap-1 text-xs text-white/70">
                 <span className="flex justify-between">
                   <span>{field.label}</span>

@@ -254,8 +254,8 @@ export default function HostLivePage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4 sm:gap-8">
-        <HintPanel hint1={hint1Text} hint2={hint2Text} />
+      <div className="flex-1 min-h-0 flex items-stretch justify-center gap-2 sm:gap-3">
+        <HintPanel hint1={hint1Text} hint2={hint2Text} heightVh={roomLayout.videoMaxHeight} />
         <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
         {/* Spacer in HintPanel-Breite, damit das Video unabhängig von sichtbaren Tipps mittig bleibt. */}
         <div className="w-[11.75rem] shrink-0" aria-hidden="true" />

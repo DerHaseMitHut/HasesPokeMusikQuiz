@@ -141,11 +141,11 @@ export default function CandidatePlayPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4 sm:gap-8">
+      <div className="flex-1 min-h-0 flex items-stretch justify-center gap-2 sm:gap-3">
         {/* HintPanel ist immer 11.75rem breit (h-36 Buzzer-Knopf + Padding-Ringe), egal ob
             gerade Tipps sichtbar sind -- das Video bleibt so unabhängig davon mittig. Der
             Pokeball-Backdrop im Buzzer ist absolut positioniert und zählt nicht zur Flex-Breite. */}
-        <HintPanel hint1={currentSongPublic?.hint1} hint2={currentSongPublic?.hint2} />
+        <HintPanel hint1={currentSongPublic?.hint1} hint2={currentSongPublic?.hint2} heightVh={roomLayout.videoMaxHeight} />
         <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
         <BuzzerButton roomId={room.id} playerId={myPlayer.id} hotkey={hotkey} hotkeyRecording={recording} />
       </div>

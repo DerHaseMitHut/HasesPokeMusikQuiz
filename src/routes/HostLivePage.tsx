@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getRoomByCode, type Room } from '@/features/rooms/rooms'
 import { listSongsForRoom, type Song } from '@/features/songs/songs'
+import SongSelectPanel from '@/features/songs/SongSelectPanel'
 import { errorMessage } from '@/lib/errors'
 import { closeBuzzer, openBuzzer, resolveBuzzer } from '@/features/buzzer/buzzer'
 import { awardPoints, kickPlayer, uploadPlayerAvatar, getPlayerAvatarUrl } from '@/features/players/players'
@@ -245,21 +246,12 @@ export default function HostLivePage() {
       <Card className="shrink-0">
         <div className="p-3 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3 min-w-0">
-            <select
-              value={playbackState?.current_song_id ?? ''}
-              onChange={(e) => handleLoadSong(e.target.value)}
-              disabled={busy || songs.length === 0}
-              className="rounded-lg bg-stage-900/80 border border-stage-600 px-3 py-2 text-sm outline-none focus:border-poke-yellow-400 disabled:opacity-50 max-w-[220px]"
-            >
-              <option value="" disabled>
-                {songs.length === 0 ? 'Keine Songs' : 'Song wählen…'}
-              </option>
-              {songs.map((song) => (
-                <option key={song.id} value={song.id}>
-                  {song.title}
-                </option>
-              ))}
-            </select>
+            <SongSelectPanel
+              songs={songs}
+              currentSongId={playbackState?.current_song_id}
+              onSelect={handleLoadSong}
+              disabled={busy}
+            />
             <p className="text-white/60 text-sm hidden sm:flex items-center gap-2 truncate">
               {buzzerState?.is_open && <span className="w-2 h-2 rounded-full bg-poke-red-500 live-dot shrink-0" />}
               {buzzerState?.is_open

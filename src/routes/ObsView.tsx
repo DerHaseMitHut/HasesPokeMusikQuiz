@@ -5,6 +5,8 @@ import { getPlayerAvatarUrl } from '@/features/players/players'
 import { errorMessage } from '@/lib/errors'
 import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
+import HintPanel from '@/components/ui/HintPanel'
+import { useCurrentSongPublic } from '@/features/songs/useCurrentSongPublic'
 import PokeballWatermark from '@/components/ui/PokeballWatermark'
 import StaffLines from '@/components/ui/StaffLines'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
@@ -19,6 +21,7 @@ export default function ObsView() {
   const [error, setError] = useState<string | null>(null)
 
   const { players, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
+  const currentSongPublic = useCurrentSongPublic()
 
   useEffect(() => {
     if (!roomCode) return
@@ -72,8 +75,11 @@ export default function ObsView() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex items-stretch justify-center">
+      <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4 sm:gap-8">
+        <HintPanel hint1={currentSongPublic?.hint1} hint2={currentSongPublic?.hint2} />
         <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
+        {/* Spacer in HintPanel-Breite, damit das Video unabhängig von sichtbaren Tipps mittig bleibt. */}
+        <div className="w-[11.75rem] shrink-0" aria-hidden="true" />
       </div>
     </div>
   )

@@ -10,15 +10,27 @@ export interface Song {
   riddle_storage_path: string
   solution_storage_path: string
   revealed: boolean
+  hint1: string | null
+  hint2: string | null
   created_at: string
 }
 
 export type NewSong = Pick<
   Song,
-  'room_id' | 'order_index' | 'title' | 'correct_answer' | 'points' | 'riddle_storage_path' | 'solution_storage_path'
+  | 'room_id'
+  | 'order_index'
+  | 'title'
+  | 'correct_answer'
+  | 'points'
+  | 'riddle_storage_path'
+  | 'solution_storage_path'
+  | 'hint1'
+  | 'hint2'
 >
 
-// Spiegelt die songs_public-View: Titel/Lösung/Lösungs-Clip sind null, solange revealed=false.
+// Spiegelt die songs_public-View: Titel/Lösung/Lösungs-Clip sind null, solange revealed=false;
+// hint1/hint2 sind null, bis der Host sie für die aktuell geladene Runde freischaltet
+// (playback_state.hint1_shown/hint2_shown).
 export interface SongPublic {
   id: string
   room_id: string
@@ -29,6 +41,8 @@ export interface SongPublic {
   title: string | null
   correct_answer: string | null
   solution_storage_path: string | null
+  hint1: string | null
+  hint2: string | null
 }
 
 const BUCKET = 'song-videos'

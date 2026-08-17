@@ -6,6 +6,8 @@ import { useAuthStore } from '@/features/auth/authStore'
 import { useQuizStore } from '@/store/quizStore'
 import { updatePlayerVdoUrl, getPlayerAvatarUrl } from '@/features/players/players'
 import CamTile from '@/components/ui/CamTile'
+import HintPanel from '@/components/ui/HintPanel'
+import { useCurrentSongPublic } from '@/features/songs/useCurrentSongPublic'
 import PokeballWatermark from '@/components/ui/PokeballWatermark'
 import StaffLines from '@/components/ui/StaffLines'
 import Button from '@/components/ui/Button'
@@ -28,6 +30,7 @@ export default function CandidatePlayPage() {
   const [savingVdoUrl, setSavingVdoUrl] = useState(false)
   const [vdoUrlError, setVdoUrlError] = useState<string | null>(null)
   const { hotkey, recording, startRecording, clearHotkey } = useBuzzerHotkey()
+  const currentSongPublic = useCurrentSongPublic()
 
   useEffect(() => {
     if (!roomCode) return
@@ -139,10 +142,10 @@ export default function CandidatePlayPage() {
       </div>
 
       <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4 sm:gap-8">
-        {/* Spacer in Buzzer-Breite (h-36 Knopf + Padding-Ringe = 11.75rem). Der Pokeball-Backdrop
-            im Buzzer ist absolut positioniert und zählt nicht zur Flex-Breite -- nur der Knopf
-            selbst tut das --, daher bleibt dieser Wert unabhängig von der Pokeball-Größe. */}
-        <div className="w-[11.75rem] shrink-0" aria-hidden="true" />
+        {/* HintPanel ist immer 11.75rem breit (h-36 Buzzer-Knopf + Padding-Ringe), egal ob
+            gerade Tipps sichtbar sind -- das Video bleibt so unabhängig davon mittig. Der
+            Pokeball-Backdrop im Buzzer ist absolut positioniert und zählt nicht zur Flex-Breite. */}
+        <HintPanel hint1={currentSongPublic?.hint1} hint2={currentSongPublic?.hint2} />
         <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
         <BuzzerButton roomId={room.id} playerId={myPlayer.id} hotkey={hotkey} hotkeyRecording={recording} />
       </div>

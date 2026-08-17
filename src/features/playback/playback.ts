@@ -3,7 +3,23 @@ import { supabase } from '@/lib/supabaseClient'
 export async function loadSong(roomId: string, songId: string): Promise<void> {
   const { error } = await supabase
     .from('playback_state')
-    .update({ current_song_id: songId, current_clip: 'riddle', position_seconds: 0, is_playing: true })
+    .update({
+      current_song_id: songId,
+      current_clip: 'riddle',
+      position_seconds: 0,
+      is_playing: true,
+      hint1_shown: false,
+      hint2_shown: false,
+    })
+    .eq('room_id', roomId)
+  if (error) throw error
+}
+
+export async function showHint(roomId: string, hintNumber: 1 | 2): Promise<void> {
+  const column = hintNumber === 1 ? 'hint1_shown' : 'hint2_shown'
+  const { error } = await supabase
+    .from('playback_state')
+    .update({ [column]: true })
     .eq('room_id', roomId)
   if (error) throw error
 }

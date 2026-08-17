@@ -14,6 +14,8 @@ export default function SongUploadForm({
   const [title, setTitle] = useState('')
   const [correctAnswer, setCorrectAnswer] = useState('')
   const [points, setPoints] = useState(100)
+  const [hint1, setHint1] = useState('')
+  const [hint2, setHint2] = useState('')
   const [riddleFile, setRiddleFile] = useState<File | null>(null)
   const [solutionFile, setSolutionFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -49,11 +51,15 @@ export default function SongUploadForm({
         points,
         riddle_storage_path: riddlePath,
         solution_storage_path: solutionPath,
+        hint1: hint1.trim() || null,
+        hint2: hint2.trim() || null,
       })
 
       setTitle('')
       setCorrectAnswer('')
       setPoints(100)
+      setHint1('')
+      setHint2('')
       setRiddleFile(null)
       setSolutionFile(null)
       onCreated()
@@ -91,16 +97,34 @@ export default function SongUploadForm({
         </label>
       </div>
 
-      <label className="flex flex-col gap-1 text-sm text-white/70 w-32">
-        Punkte
-        <input
-          type="number"
-          min={0}
-          value={points}
-          onChange={(e) => setPoints(Number(e.target.value))}
-          className="rounded-lg bg-stage-900 border border-stage-600 px-3 py-2 outline-none focus:border-poke-yellow-400"
-        />
-      </label>
+      <div className="grid sm:grid-cols-3 gap-4">
+        <label className="flex flex-col gap-1 text-sm text-white/70 w-32">
+          Punkte
+          <input
+            type="number"
+            min={0}
+            value={points}
+            onChange={(e) => setPoints(Number(e.target.value))}
+            className="rounded-lg bg-stage-900 border border-stage-600 px-3 py-2 outline-none focus:border-poke-yellow-400"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-white/70">
+          Tipp 1 (optional)
+          <input
+            value={hint1}
+            onChange={(e) => setHint1(e.target.value)}
+            className="rounded-lg bg-stage-900 border border-stage-600 px-3 py-2 outline-none focus:border-poke-yellow-400"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-white/70">
+          Tipp 2 (optional)
+          <input
+            value={hint2}
+            onChange={(e) => setHint2(e.target.value)}
+            className="rounded-lg bg-stage-900 border border-stage-600 px-3 py-2 outline-none focus:border-poke-yellow-400"
+          />
+        </label>
+      </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         <label className="flex flex-col gap-1 text-sm text-white/70">

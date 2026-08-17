@@ -190,3 +190,12 @@ h1, h2, h3, h4, .font-display {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
+
+@keyframes hint-pop {
+  0% { opacity: 0; transform: scale(0.85) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.hint-pop {
+  animation: hint-pop 0.4s cubic-bezier(0.25, 1.4, 0.5, 1) both;
+}

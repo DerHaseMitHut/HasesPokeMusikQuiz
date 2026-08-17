@@ -6,10 +6,11 @@ import SongSelectPanel from '@/features/songs/SongSelectPanel'
 import { errorMessage } from '@/lib/errors'
 import { closeBuzzer, openBuzzer, resolveBuzzer } from '@/features/buzzer/buzzer'
 import { awardPoints, kickPlayer, uploadPlayerAvatar, getPlayerAvatarUrl } from '@/features/players/players'
-import { loadSong, setPlaying, showSolution } from '@/features/playback/playback'
+import { loadSong, setPlaying, showHint, showSolution } from '@/features/playback/playback'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
 import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
+import HintPanel from '@/components/ui/HintPanel'
 import LayoutSettingsPanel from '@/components/ui/LayoutSettingsPanel'
 import PokeballWatermark from '@/components/ui/PokeballWatermark'
 import StaffLines from '@/components/ui/StaffLines'
@@ -64,6 +65,8 @@ export default function HostLivePage() {
 
   const winner = buzzerState?.winner_player_id ? players.find((p) => p.id === buzzerState.winner_player_id) : null
   const currentSong = songs.find((s) => s.id === playbackState?.current_song_id) ?? null
+  const hint1Text = playbackState?.hint1_shown ? currentSong?.hint1 : null
+  const hint2Text = playbackState?.hint2_shown ? currentSong?.hint2 : null
 
   async function handleOpen() {
     setBusy(true)
@@ -160,6 +163,18 @@ export default function HostLivePage() {
     }
   }
 
+  async function handleShowHint(hintNumber: 1 | 2) {
+    setBusy(true)
+    setError(null)
+    try {
+      await showHint(room!.id, hintNumber)
+    } catch (err) {
+      setError(errorMessage(err, `Tipp ${hintNumber} konnte nicht angezeigt werden.`))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function handleCopyObsLink() {
     try {
       await navigator.clipboard.writeText(`${window.location.origin}/obs/${room!.code}?token=${room!.obs_token}`)
@@ -239,8 +254,11 @@ export default function HostLivePage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex items-stretch justify-center">
+      <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4 sm:gap-8">
+        <HintPanel hint1={hint1Text} hint2={hint2Text} />
         <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
+        {/* Spacer in HintPanel-Breite, damit das Video unabhängig von sichtbaren Tipps mittig bleibt. */}
+        <div className="w-[11.75rem] shrink-0" aria-hidden="true" />
       </div>
 
       <Card className="shrink-0">
@@ -272,6 +290,22 @@ export default function HostLivePage() {
               className={`${PANEL_BTN} bg-gradient-to-b from-poke-blue-400 to-poke-blue-600 text-white hover:brightness-110`}
             >
               {playbackState?.is_playing ? 'Pause' : 'Play'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleShowHint(1)}
+              disabled={busy || !currentSong?.hint1 || playbackState?.hint1_shown}
+              className={`${PANEL_BTN} bg-gradient-to-b from-poke-blue-400 to-poke-blue-600 text-white hover:brightness-110`}
+            >
+              {playbackState?.hint1_shown ? 'Tipp 1 gezeigt' : 'Tipp 1 anzeigen'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleShowHint(2)}
+              disabled={busy || !currentSong?.hint2 || playbackState?.hint2_shown}
+              className={`${PANEL_BTN} bg-gradient-to-b from-poke-blue-400 to-poke-blue-600 text-white hover:brightness-110`}
+            >
+              {playbackState?.hint2_shown ? 'Tipp 2 gezeigt' : 'Tipp 2 anzeigen'}
             </button>
             <button
               type="button"

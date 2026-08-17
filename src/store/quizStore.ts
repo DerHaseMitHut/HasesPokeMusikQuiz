@@ -19,6 +19,8 @@ export interface PlaybackStateRow {
   current_clip: 'riddle' | 'solution'
   is_playing: boolean
   position_seconds: number
+  hint1_shown: boolean
+  hint2_shown: boolean
   updated_at: string
 }
 

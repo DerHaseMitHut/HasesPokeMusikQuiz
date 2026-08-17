@@ -72,6 +72,15 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
     return () => clearInterval(id)
   }, [clipUrl])
 
+  // Sofort reagieren statt bis zu SYNC_INTERVAL_MS (2s) auf den nächsten periodischen Tick zu
+  // warten -- sonst fühlen sich Play/Pause/"Von vorne" spürbar verzögert an, obwohl der DB-
+  // Schreibvorgang selbst schnell war.
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || !playbackState || !clipUrl) return
+    applySync(video, playbackState, offsetRef.current)
+  }, [playbackState?.is_playing, playbackState?.position_seconds, playbackState?.current_clip, clipUrl])
+
   useEffect(() => {
     if (videoRef.current) videoRef.current.volume = volume
   }, [volume, clipUrl])
@@ -85,10 +94,19 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
     if (state.is_playing) video.play().catch(() => {})
   }
 
+  // videoRef direkt setzen UND sofort die Lautstärke anwenden, statt auf den nächsten Render-
+  // Zyklus/Effect zu warten -- garantiert, dass ein neu gemountetes <video> (key={clipUrl}
+  // wechselt bei jedem Songwechsel) nie kurz mit falscher Lautstärke startet.
+  function setVideoNode(el: HTMLVideoElement | null) {
+    videoRef.current = el
+    if (el) el.volume = volume
+  }
+
   function handleVolumeChange(e: ChangeEvent<HTMLInputElement>) {
     const v = Number(e.target.value)
     setVolume(v)
     localStorage.setItem(VOLUME_STORAGE_KEY, String(v))
+    if (videoRef.current) videoRef.current.volume = v
   }
 
   // height als konkrete vh-Einheit (nicht % eines Flex-Elternteils) ist immer "definit" --
@@ -112,9 +130,10 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
         {clipUrl ? (
           <video
             key={clipUrl}
-            ref={videoRef}
+            ref={setVideoNode}
             src={clipUrl}
             className="w-full h-full object-contain"
+            muted={false}
             playsInline
             onLoadedMetadata={handleLoadedMetadata}
           />

@@ -60,10 +60,11 @@ body {
   position: relative;
 }
 
-/* Foil: zwei gegenläufige, langsam wandernde Regenbogen-Streifensets (wie Hologramm-Folie auf
-   einer Sammelkarte) statt weicher Farbflecken -- eigene Layer statt Teil des
+/* Foil: zwei gegenläufige, langsam wandernde weiße Streifensets (wie ein Lichtreflex auf
+   Hologramm-Folie) statt weicher Farbflecken -- eigene Layer statt Teil des
    body-background-image, damit sie animiert werden können, ohne die statischen
-   Gradienten/Scanlines oben neu zu berechnen. */
+   Gradienten/Scanlines oben neu zu berechnen. Bewusst farblos/sehr dezent: die Farbe soll
+   allein vom body-background-image oben kommen, der Foil-Layer liefert nur den Glanz/Schimmer. */
 body::before,
 body::after {
   content: '';
@@ -75,27 +76,25 @@ body::after {
 }
 
 body::before {
-  opacity: 0.22;
+  opacity: 0.05;
   background: repeating-linear-gradient(
     115deg,
-    var(--color-poke-yellow-400) 0%,
-    var(--color-poke-red-500) 9%,
-    var(--color-poke-blue-500) 18%,
-    var(--color-note-green) 27%,
-    var(--color-poke-yellow-400) 36%
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0) 8%,
+    rgba(255, 255, 255, 0) 16%,
+    rgba(255, 255, 255, 0.9) 24%
   );
   animation: foil-shift-1 22s linear infinite;
 }
 
 body::after {
-  opacity: 0.14;
+  opacity: 0.035;
   background: repeating-linear-gradient(
     -65deg,
-    var(--color-poke-blue-500) 0%,
-    var(--color-note-green) 9%,
-    var(--color-poke-yellow-400) 18%,
-    var(--color-poke-red-500) 27%,
-    var(--color-poke-blue-500) 36%
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0) 8%,
+    rgba(255, 255, 255, 0) 16%,
+    rgba(255, 255, 255, 0.9) 24%
   );
   animation: foil-shift-2 26s linear infinite;
 }

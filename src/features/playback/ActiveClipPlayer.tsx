@@ -80,8 +80,13 @@ export default function ActiveClipPlayer({ heightVh }: { heightVh: number }) {
   // -- sonst würde die Slider-Einstellung auf kurzen/kleinen Fenstern Geschwister wie den
   // Buzzer aus dem Viewport drängen statt selbst zu schrumpfen. max-width fängt den Fall ab,
   // dass die berechnete Breite den verfügbaren Platz sprengen würde (schmale Fenster).
+  // w-full auf diesem Wrapper würde ihn per flex-basis:auto->100% über die gesamte verfügbare
+  // Zeilenbreite spannen (viel breiter als das eigentliche Video), wodurch Geschwister wie
+  // HintPanel am Rand dieser breiten Zone statt bündig neben dem sichtbaren Video landen --
+  // ohne w-full schrumpft der Wrapper auf die tatsächliche Videobreite, und die Zeile zentriert
+  // die ganze Gruppe (HintPanel + Video + Buzzer) eng zusammen.
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="h-full flex items-center justify-center">
       <div
         className="bg-black rounded-2xl overflow-hidden flex items-center justify-center"
         style={{ aspectRatio: '55 / 29', height: `min(${heightVh}vh, 100%)`, width: 'auto', maxWidth: '100%' }}

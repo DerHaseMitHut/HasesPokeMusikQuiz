@@ -24,6 +24,14 @@ export async function showHint(roomId: string, hintNumber: 1 | 2): Promise<void>
   if (error) throw error
 }
 
+export async function restartClip(roomId: string): Promise<void> {
+  const { error } = await supabase
+    .from('playback_state')
+    .update({ position_seconds: 0, is_playing: true })
+    .eq('room_id', roomId)
+  if (error) throw error
+}
+
 export async function setPlaying(roomId: string, isPlaying: boolean, positionSeconds: number): Promise<void> {
   const { error } = await supabase
     .from('playback_state')

@@ -17,6 +17,7 @@ export default function BuzzerButton({
 }) {
   const buzzerState = useQuizStore((s) => s.buzzerState)
   const players = useQuizStore((s) => s.players)
+  const currentClip = useQuizStore((s) => s.playbackState?.current_clip)
   const [pressed, setPressed] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -25,7 +26,10 @@ export default function BuzzerButton({
     setError(null)
   }, [buzzerState?.round_id])
 
-  const isOpen = buzzerState?.is_open ?? false
+  // Während der Lösungs-Clip läuft, ist Buzzern gesperrt -- serverseitig ohnehin per Trigger
+  // (guard_buzz_event) durchgesetzt, hier nur zusätzlich fürs UI, damit gar nicht erst geklickt
+  // werden kann.
+  const isOpen = (buzzerState?.is_open ?? false) && currentClip !== 'solution'
 
   async function handlePress() {
     if (!buzzerState || !isOpen || pressed) return

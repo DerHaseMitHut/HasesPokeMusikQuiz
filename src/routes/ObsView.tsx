@@ -49,7 +49,7 @@ export default function ObsView() {
     <div className="h-screen w-screen flex flex-col overflow-hidden p-3 gap-2">
       <PokeballWatermark />
       <div className="flex items-center gap-2 shrink-0">
-        <span className="font-display font-800 text-xl tracking-tight">
+        <span className="font-display font-800 text-[2.5rem] tracking-tight">
           <span className="text-poke-yellow-400">PokéMusik</span>
           <span className="text-poke-red-500">Quiz</span>
         </span>

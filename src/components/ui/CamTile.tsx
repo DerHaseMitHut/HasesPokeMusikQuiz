@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { normalizeVdoUrl } from '@/lib/vdoNinja'
 
 const AVATAR_GRADIENTS = [
@@ -26,6 +26,7 @@ export default function CamTile({
   onKick,
   avatarUrl,
   onAvatarUpload,
+  onAdjustScore,
 }: {
   vdoUrl: string | null | undefined
   label: string
@@ -35,9 +36,12 @@ export default function CamTile({
   onKick?: () => void
   avatarUrl?: string | null
   onAvatarUpload?: (file: File) => void
+  onAdjustScore?: (delta: number) => void
 }) {
   const url = normalizeVdoUrl(vdoUrl)
   const avatarInputRef = useRef<HTMLInputElement>(null)
+  const [scorePopoverOpen, setScorePopoverOpen] = useState(false)
+  const [customDelta, setCustomDelta] = useState('')
 
   return (
     <div className="flex flex-col gap-1.5 sm:gap-2">
@@ -110,7 +114,69 @@ export default function CamTile({
         </span>
         <span className="flex-1 truncate text-center font-700 text-base">{label}</span>
         {score !== undefined ? (
-          <span className="font-display font-700 text-lg text-poke-yellow-400 shrink-0 w-9 text-center">{score}</span>
+          onAdjustScore ? (
+            <span className="relative shrink-0 w-9">
+              <button
+                type="button"
+                onClick={() => setScorePopoverOpen((v) => !v)}
+                title="Punkte anpassen"
+                className="font-display font-700 text-lg text-poke-yellow-400 hover:text-poke-yellow-300 w-9 text-center"
+              >
+                {score}
+              </button>
+              {scorePopoverOpen && (
+                <div className="absolute z-30 top-full right-0 mt-2 w-40 holo-border rounded-xl p-px shadow-[0_0_30px_-8px_rgba(0,0,0,0.8)]">
+                  <div className="rounded-[11px] bg-stage-800/95 backdrop-blur-sm p-2.5 flex flex-col gap-2">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onAdjustScore(-1)
+                          setScorePopoverOpen(false)
+                        }}
+                        className="w-8 h-8 rounded-lg bg-stage-700 hover:bg-stage-600 text-white font-700"
+                      >
+                        −1
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onAdjustScore(1)
+                          setScorePopoverOpen(false)
+                        }}
+                        className="w-8 h-8 rounded-lg bg-stage-700 hover:bg-stage-600 text-white font-700"
+                      >
+                        +1
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        value={customDelta}
+                        onChange={(e) => setCustomDelta(e.target.value)}
+                        placeholder="±N"
+                        className="w-full min-w-0 rounded-lg bg-stage-900 border border-stage-600 px-2 py-1 text-sm outline-none focus:border-poke-yellow-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const delta = Number(customDelta)
+                          if (Number.isFinite(delta) && delta !== 0) onAdjustScore(delta)
+                          setCustomDelta('')
+                          setScorePopoverOpen(false)
+                        }}
+                        className="shrink-0 rounded-lg bg-poke-yellow-500 hover:bg-poke-yellow-400 text-stage-950 text-sm font-700 px-2.5 py-1"
+                      >
+                        OK
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </span>
+          ) : (
+            <span className="font-display font-700 text-lg text-poke-yellow-400 shrink-0 w-9 text-center">{score}</span>
+          )
         ) : (
           <span className="w-9 shrink-0" aria-hidden="true" />
         )}

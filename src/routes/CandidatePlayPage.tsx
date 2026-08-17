@@ -83,7 +83,7 @@ export default function CandidatePlayPage() {
       <PokeballWatermark hideRightBall />
       <div className="flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="font-display font-800 text-xl tracking-tight shrink-0">
+          <span className="font-display font-800 text-[2.5rem] tracking-tight shrink-0">
             <span className="text-poke-yellow-400">PokéMusik</span>
             <span className="text-poke-red-500">Quiz</span>
           </span>
@@ -146,7 +146,7 @@ export default function CandidatePlayPage() {
             gerade Tipps sichtbar sind -- das Video bleibt so unabhängig davon mittig. Der
             Pokeball-Backdrop im Buzzer ist absolut positioniert und zählt nicht zur Flex-Breite. */}
         <HintPanel hint1={currentSongPublic?.hint1} hint2={currentSongPublic?.hint2} heightVh={roomLayout.videoMaxHeight} />
-        <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
+        <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} showVolumeControl />
         <BuzzerButton roomId={room.id} playerId={myPlayer.id} hotkey={hotkey} hotkeyRecording={recording} />
       </div>
     </div>

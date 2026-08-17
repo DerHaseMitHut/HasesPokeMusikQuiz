@@ -7,9 +7,9 @@
 // "voll gestreckter Rahmen, darin zentrierter Inhalt gleicher Höhe"-Aufbau verwenden, landen
 // Tipp-Boxen und Video auf derselben vertikalen Position statt gegeneinander versetzt.
 function hintFontClass(text: string): string {
-  if (text.length > 140) return 'text-xs'
-  if (text.length > 80) return 'text-sm'
-  return 'text-base'
+  if (text.length > 140) return 'text-base'
+  if (text.length > 80) return 'text-lg'
+  return 'text-xl'
 }
 
 function HintSlot({ n, text }: { n: 1 | 2; text?: string | null }) {

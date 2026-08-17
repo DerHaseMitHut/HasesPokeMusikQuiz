@@ -6,7 +6,7 @@ import SongSelectPanel from '@/features/songs/SongSelectPanel'
 import { errorMessage } from '@/lib/errors'
 import { closeBuzzer, openBuzzer, resolveBuzzer } from '@/features/buzzer/buzzer'
 import { awardPoints, kickPlayer, uploadPlayerAvatar, getPlayerAvatarUrl } from '@/features/players/players'
-import { loadSong, setPlaying, showHint, showSolution } from '@/features/playback/playback'
+import { loadSong, restartClip, setPlaying, showHint, showSolution } from '@/features/playback/playback'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
 import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
@@ -67,6 +67,9 @@ export default function HostLivePage() {
   const currentSong = songs.find((s) => s.id === playbackState?.current_song_id) ?? null
   const hint1Text = playbackState?.hint1_shown ? currentSong?.hint1 : null
   const hint2Text = playbackState?.hint2_shown ? currentSong?.hint2 : null
+  // Punkte für eine richtige Antwort sinken mit jedem bereits gezeigten Tipp: 6/4/2.
+  const hintsShownCount = (playbackState?.hint1_shown ? 1 : 0) + (playbackState?.hint2_shown ? 1 : 0)
+  const correctPoints = 6 - hintsShownCount * 2
 
   async function handleOpen() {
     setBusy(true)
@@ -125,11 +128,11 @@ export default function HostLivePage() {
   }
 
   async function handleCorrect() {
-    if (!winner || !currentSong) return
+    if (!winner) return
     setBusy(true)
     setError(null)
     try {
-      await awardPoints(winner.id, currentSong.points)
+      await awardPoints(winner.id, correctPoints)
       await resolveBuzzer(room!.id)
     } catch (err) {
       setError(errorMessage(err, 'Punkte konnten nicht vergeben werden.'))
@@ -139,12 +142,55 @@ export default function HostLivePage() {
   }
 
   async function handleWrong() {
+    if (!winner) return
     setBusy(true)
     setError(null)
     try {
+      // Bei einer falschen Antwort bekommt jeder ANDERE Teilnehmer 1 Punkt.
+      const others = players.filter((p) => p.id !== winner.id)
+      await Promise.all(others.map((p) => awardPoints(p.id, 1)))
       await openBuzzer(room!.id, buzzerState?.current_song_id ?? null)
     } catch (err) {
       setError(errorMessage(err, 'Buzzer konnte nicht neu geöffnet werden.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleVoid() {
+    setBusy(true)
+    setError(null)
+    try {
+      // Wertlos: weder Pluspunkte für richtig noch Punkte für die anderen -- z.B. bei
+      // versehentlichem Buzzern. Buzzer bleibt geschlossen, Video bleibt pausiert, bis der
+      // Host manuell weiterspielt oder neu öffnet.
+      await resolveBuzzer(room!.id)
+    } catch (err) {
+      setError(errorMessage(err, 'Konnte nicht als wertlos markiert werden.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleRestart() {
+    setBusy(true)
+    setError(null)
+    try {
+      await restartClip(room!.id)
+    } catch (err) {
+      setError(errorMessage(err, 'Video konnte nicht neu gestartet werden.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleAdjustScore(playerId: string, delta: number) {
+    setBusy(true)
+    setError(null)
+    try {
+      await awardPoints(playerId, delta)
+    } catch (err) {
+      setError(errorMessage(err, 'Punkte konnten nicht angepasst werden.'))
     } finally {
       setBusy(false)
     }
@@ -215,7 +261,7 @@ export default function HostLivePage() {
       <PokeballWatermark />
       <div className="flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="font-display font-800 text-xl tracking-tight shrink-0">
+          <span className="font-display font-800 text-[2.5rem] tracking-tight shrink-0">
             <span className="text-poke-yellow-400">PokéMusik</span>
             <span className="text-poke-red-500">Quiz</span>
           </span>
@@ -249,6 +295,7 @@ export default function HostLivePage() {
               onKick={() => handleKick(player.id, player.display_name)}
               avatarUrl={getPlayerAvatarUrl(player.avatar_storage_path)}
               onAvatarUpload={(file) => handleAvatarUpload(player.id, file)}
+              onAdjustScore={(delta) => handleAdjustScore(player.id, delta)}
             />
           ))}
         </div>
@@ -256,7 +303,7 @@ export default function HostLivePage() {
 
       <div className="flex-1 min-h-0 flex items-stretch justify-center gap-2 sm:gap-3">
         <HintPanel hint1={hint1Text} hint2={hint2Text} heightVh={roomLayout.videoMaxHeight} />
-        <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
+        <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} showVolumeControl />
         {/* Spacer in HintPanel-Breite, damit das Video unabhängig von sichtbaren Tipps mittig bleibt. */}
         <div className="w-[11.75rem] shrink-0" aria-hidden="true" />
       </div>
@@ -293,6 +340,14 @@ export default function HostLivePage() {
             </button>
             <button
               type="button"
+              onClick={handleRestart}
+              disabled={busy || !playbackState?.current_song_id}
+              className={`${PANEL_BTN} bg-stage-700 text-white/90 hover:bg-stage-600`}
+            >
+              Von vorne
+            </button>
+            <button
+              type="button"
               onClick={() => handleShowHint(1)}
               disabled={busy || !currentSong?.hint1 || playbackState?.hint1_shown}
               className={`${PANEL_BTN} bg-gradient-to-b from-poke-blue-400 to-poke-blue-600 text-white hover:brightness-110`}
@@ -320,10 +375,10 @@ export default function HostLivePage() {
                 <button
                   type="button"
                   onClick={handleCorrect}
-                  disabled={busy || !currentSong}
+                  disabled={busy}
                   className={`${PANEL_BTN} bg-gradient-to-b from-poke-yellow-300 to-note-green text-stage-950 hover:brightness-105`}
                 >
-                  Richtig{currentSong ? ` (+${currentSong.points})` : ''}
+                  Richtig (+{correctPoints})
                 </button>
                 <button
                   type="button"
@@ -331,7 +386,15 @@ export default function HostLivePage() {
                   disabled={busy}
                   className={`${PANEL_BTN} bg-stage-700 text-white/90 hover:bg-stage-600`}
                 >
-                  Falsch
+                  Falsch (+1 für andere)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleVoid}
+                  disabled={busy}
+                  className={`${PANEL_BTN} bg-stage-700 text-white/60 hover:bg-stage-600`}
+                >
+                  Wertlos
                 </button>
               </>
             )}

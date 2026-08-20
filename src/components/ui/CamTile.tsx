@@ -73,13 +73,9 @@ export default function CamTile({
       >
         <div className="relative w-full h-full rounded-[10px] overflow-hidden bg-stage-900">
           {url ? (
-            // pointer-events-none: verhindert, dass die Maus je das <video>-Element im
-            // (cross-origin) Iframe erreicht -- sonst blendet Firefox beim Hovern sein eigenes
-            // "Video herausholen"-Picture-in-Picture-Icon ein, das sich von außen nicht anders
-            // unterdrücken lässt. Reine Anzeige-Kachel, niemand muss mit ihr interagieren.
             <iframe
               src={url}
-              className="w-full h-full scale-[1.03] pointer-events-none"
+              className="w-full h-full scale-[1.03]"
               allow="camera;microphone;autoplay;fullscreen;display-capture"
             />
           ) : (

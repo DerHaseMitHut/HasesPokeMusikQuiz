@@ -13,7 +13,11 @@ export function normalizeVdoUrl(url: string | null | undefined): string {
     const streamId = parsed.searchParams.get('view') ?? parsed.searchParams.get('push')
     if (!streamId) return url
 
-    return `https://vdo.ninja/?view=${encodeURIComponent(streamId)}&cleanoutput&transparent&autoplay&controls=0`
+    // &muted ist entscheidend, nicht nur Geschmackssache: Audio läuft ohnehin separat über
+    // Discord, und ohne &muted blockieren Browser Autoplay-mit-Ton ohne Nutzergeste -- VDO.Ninja
+    // fällt dann auf eine manuelle "Klick zum Abspielen"-UI zurück, die wir mit &controls=0 aber
+    // gerade ausblenden, sodass das Bild ohne &muted an einem Standbild hängen bleibt.
+    return `https://vdo.ninja/?view=${encodeURIComponent(streamId)}&cleanoutput&transparent&autoplay&controls=0&muted`
   } catch {
     return url
   }

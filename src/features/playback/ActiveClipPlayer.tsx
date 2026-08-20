@@ -203,6 +203,13 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
           <video
             key={clipUrl}
             ref={setVideoNode}
+            // crossOrigin muss vor src gesetzt sein und stammt vom Supabase-Storage-Clip (anderer
+            // Origin als die App) -- ohne dieses Attribut speist Chrome trotz des vom Storage
+            // gesendeten Access-Control-Allow-Origin: * NUR STILLE in den GainNode ein
+            // ("MediaElementAudioSource outputs zeroes due to CORS access restrictions"), während
+            // der native Videopfad unkontrolliert in voller Lautstärke weiterläuft. Das war die
+            // eigentliche Ursache dafür, dass der Regler bisher nie tatsächlich leiser gemacht hat.
+            crossOrigin="anonymous"
             src={clipUrl}
             className="w-full h-full object-contain"
             playsInline

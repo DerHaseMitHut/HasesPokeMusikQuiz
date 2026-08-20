@@ -24,7 +24,7 @@ export default function CandidatePlayPage() {
   const [room, setRoom] = useState<Room | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
-  const { players, roomLayout, connect, disconnect } = useQuizStore()
+  const { players, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
   const [playersLoaded, setPlayersLoaded] = useState(false)
   const vdoUrlInputRef = useRef<HTMLInputElement>(null)
   const [editingVdoUrl, setEditingVdoUrl] = useState(false)
@@ -137,6 +137,7 @@ export default function CandidatePlayPage() {
               vdoUrl={player.vdo_url}
               label={player.id === myPlayer.id ? `${player.display_name} (Du)` : player.display_name}
               score={player.score}
+              highlighted={player.id === buzzerState?.winner_player_id}
               avatarUrl={getPlayerAvatarUrl(player.avatar_storage_path)}
             />
           ))}

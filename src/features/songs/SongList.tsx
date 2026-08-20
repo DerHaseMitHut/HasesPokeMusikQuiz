@@ -55,10 +55,7 @@ export default function SongList({
 
           <div className="flex-1">
             <p className="font-700">{song.title}</p>
-            <p className="text-white/50 text-sm">{song.correct_answer}</p>
           </div>
-
-          <span className="font-display font-700 text-poke-yellow-400">{song.points} Pkt.</span>
 
           <button
             type="button"

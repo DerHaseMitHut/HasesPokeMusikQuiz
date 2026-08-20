@@ -5,8 +5,6 @@ export interface Song {
   room_id: string
   order_index: number
   title: string
-  correct_answer: string
-  points: number
   riddle_storage_path: string
   solution_storage_path: string
   revealed: boolean
@@ -17,29 +15,19 @@ export interface Song {
 
 export type NewSong = Pick<
   Song,
-  | 'room_id'
-  | 'order_index'
-  | 'title'
-  | 'correct_answer'
-  | 'points'
-  | 'riddle_storage_path'
-  | 'solution_storage_path'
-  | 'hint1'
-  | 'hint2'
+  'room_id' | 'order_index' | 'title' | 'riddle_storage_path' | 'solution_storage_path' | 'hint1' | 'hint2'
 >
 
-// Spiegelt die songs_public-View: Titel/Lösung/Lösungs-Clip sind null, solange revealed=false;
+// Spiegelt die songs_public-View: Titel/Lösungs-Clip sind null, solange revealed=false;
 // hint1/hint2 sind null, bis der Host sie für die aktuell geladene Runde freischaltet
 // (playback_state.hint1_shown/hint2_shown).
 export interface SongPublic {
   id: string
   room_id: string
   order_index: number
-  points: number
   riddle_storage_path: string
   revealed: boolean
   title: string | null
-  correct_answer: string | null
   solution_storage_path: string | null
   hint1: string | null
   hint2: string | null

@@ -12,8 +12,6 @@ export default function SongUploadForm({
   onCreated: () => void
 }) {
   const [title, setTitle] = useState('')
-  const [correctAnswer, setCorrectAnswer] = useState('')
-  const [points, setPoints] = useState(100)
   const [hint1, setHint1] = useState('')
   const [hint2, setHint2] = useState('')
   const [riddleFile, setRiddleFile] = useState<File | null>(null)
@@ -22,12 +20,7 @@ export default function SongUploadForm({
   const [progress, setProgress] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const canSubmit =
-    title.trim().length > 0 &&
-    correctAnswer.trim().length > 0 &&
-    riddleFile !== null &&
-    solutionFile !== null &&
-    !submitting
+  const canSubmit = title.trim().length > 0 && riddleFile !== null && solutionFile !== null && !submitting
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -47,8 +40,6 @@ export default function SongUploadForm({
         room_id: roomId,
         order_index: nextOrderIndex,
         title: title.trim(),
-        correct_answer: correctAnswer.trim(),
-        points,
         riddle_storage_path: riddlePath,
         solution_storage_path: solutionPath,
         hint1: hint1.trim() || null,
@@ -56,8 +47,6 @@ export default function SongUploadForm({
       })
 
       setTitle('')
-      setCorrectAnswer('')
-      setPoints(100)
       setHint1('')
       setHint2('')
       setRiddleFile(null)
@@ -78,36 +67,16 @@ export default function SongUploadForm({
     >
       <h2 className="font-display text-xl font-700">Neuen Song hinzufügen</h2>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <label className="flex flex-col gap-1 text-sm text-white/70">
-          Titel
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="rounded-lg bg-stage-900 border border-stage-600 px-3 py-2 outline-none focus:border-poke-yellow-400"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm text-white/70">
-          Lösung / Interpret &amp; Titel
-          <input
-            value={correctAnswer}
-            onChange={(e) => setCorrectAnswer(e.target.value)}
-            className="rounded-lg bg-stage-900 border border-stage-600 px-3 py-2 outline-none focus:border-poke-yellow-400"
-          />
-        </label>
-      </div>
+      <label className="flex flex-col gap-1 text-sm text-white/70">
+        Titel
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="rounded-lg bg-stage-900 border border-stage-600 px-3 py-2 outline-none focus:border-poke-yellow-400"
+        />
+      </label>
 
-      <div className="grid sm:grid-cols-3 gap-4">
-        <label className="flex flex-col gap-1 text-sm text-white/70 w-32">
-          Punkte
-          <input
-            type="number"
-            min={0}
-            value={points}
-            onChange={(e) => setPoints(Number(e.target.value))}
-            className="rounded-lg bg-stage-900 border border-stage-600 px-3 py-2 outline-none focus:border-poke-yellow-400"
-          />
-        </label>
+      <div className="grid sm:grid-cols-2 gap-4">
         <label className="flex flex-col gap-1 text-sm text-white/70">
           Tipp 1 (optional)
           <input

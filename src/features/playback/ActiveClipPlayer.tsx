@@ -21,20 +21,6 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
     const saved = localStorage.getItem(VOLUME_STORAGE_KEY)
     return saved ? Number(saved) : 1
   })
-  // Chrome & Co. blockieren automatisches Abspielen MIT TON, wenn es nicht direkt aus einer
-  // Nutzer-Geste (Klick) ausgelöst wurde -- bei Kandidaten startet das Video aber über die
-  // Sync-Logik, nicht über einen Klick auf einen Play-Knopf. Der Regler ändert dann zwar
-  // video.volume korrekt, es ist aber trotzdem nichts zu hören. Wenn play() deshalb
-  // fehlschlägt, zeigen wir einen Button, dessen Klick (= echte Nutzer-Geste) die Sperre
-  // aufhebt.
-  const [soundBlocked, setSoundBlocked] = useState(false)
-
-  function attemptPlay(video: HTMLVideoElement) {
-    video
-      .play()
-      .then(() => setSoundBlocked(false))
-      .catch(() => setSoundBlocked(true))
-  }
 
   useEffect(() => {
     playbackRef.current = playbackState
@@ -81,7 +67,7 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
       const video = videoRef.current
       const state = playbackRef.current
       if (!video || !state || !clipUrl) return
-      applySync(video, state, offsetRef.current, attemptPlay)
+      applySync(video, state, offsetRef.current)
     }, SYNC_INTERVAL_MS)
     return () => clearInterval(id)
   }, [clipUrl])
@@ -92,7 +78,7 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
   useEffect(() => {
     const video = videoRef.current
     if (!video || !playbackState || !clipUrl) return
-    applySync(video, playbackState, offsetRef.current, attemptPlay)
+    applySync(video, playbackState, offsetRef.current)
   }, [playbackState?.is_playing, playbackState?.position_seconds, playbackState?.current_clip, clipUrl])
 
   useEffect(() => {
@@ -105,7 +91,7 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
     if (!video || !state) return
     video.currentTime = expectedPositionSeconds(state, offsetRef.current)
     video.volume = volume
-    if (state.is_playing) attemptPlay(video)
+    if (state.is_playing) video.play().catch(() => {})
   }
 
   // videoRef direkt setzen UND sofort die Lautstärke anwenden, statt auf den nächsten Render-
@@ -155,18 +141,6 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
           <p className="text-white/40">Kein Song geladen.</p>
         )}
 
-        {soundBlocked && (
-          <button
-            type="button"
-            onClick={() => {
-              if (videoRef.current) attemptPlay(videoRef.current)
-            }}
-            className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 text-white text-sm font-700 hover:bg-black/70 transition-colors"
-          >
-            🔇 Ton blockiert – zum Aktivieren klicken
-          </button>
-        )}
-
         {showVolumeControl && (
           <div className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5">
             <span className="text-white/60 text-xs">🔊</span>
@@ -186,12 +160,7 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
   )
 }
 
-function applySync(
-  video: HTMLVideoElement,
-  state: PlaybackStateRow,
-  offsetMs: number,
-  attemptPlay: (video: HTMLVideoElement) => void,
-) {
+function applySync(video: HTMLVideoElement, state: PlaybackStateRow, offsetMs: number) {
   const expected = expectedPositionSeconds(state, offsetMs)
   const drift = video.currentTime - expected
 
@@ -204,10 +173,7 @@ function applySync(
 
   // Erst seeken/Playbackrate anpassen, DANACH erst play() anfordern -- ein currentTime-Sprung
   // während eine vorherige play()-Anfrage noch offen ist, lässt manche Browser das zugehörige
-  // Promise mit einem Fehler abbrechen ("interrupted by a new load request"). Das wurde bisher
-  // fälschlich als von der Autoplay-Policy blockiert interpretiert (siehe attemptPlay/
-  // soundBlocked), obwohl es reine Selbstsabotage durch die falsche Reihenfolge war -- sichtbar
-  // als "Video spielt eine Sekunde, dann deckt das Ton-blockiert-Overlay alles zu".
+  // Promise mit einem Fehler abbrechen ("interrupted by a new load request").
   if (Math.abs(drift) > DRIFT_HARD_SEEK_SECONDS) {
     video.currentTime = expected
     video.playbackRate = 1
@@ -217,5 +183,5 @@ function applySync(
     video.playbackRate = 1
   }
 
-  if (video.paused) attemptPlay(video)
+  if (video.paused) video.play().catch(() => {})
 }

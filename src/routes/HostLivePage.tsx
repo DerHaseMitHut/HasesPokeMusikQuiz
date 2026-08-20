@@ -157,10 +157,12 @@ export default function HostLivePage() {
     setBusy(true)
     setError(null)
     try {
-      // Bei einer falschen Antwort bekommt jeder ANDERE Teilnehmer 1 Punkt.
+      // Bei einer falschen Antwort bekommt jeder ANDERE Teilnehmer 1 Punkt. Der Buzzer bleibt
+      // danach geschlossen (wie bei Richtig/Wertlos) -- er öffnet erst wieder automatisch, wenn
+      // das Video fortgesetzt wird (siehe handleTogglePlay).
       const others = players.filter((p) => p.id !== winner.id)
       await Promise.all(others.map((p) => awardPoints(p.id, 1)))
-      await openBuzzer(room!.id, buzzerState?.current_song_id ?? null, 'wrong')
+      await resolveBuzzer(room!.id, 'wrong')
     } catch (err) {
       setError(errorMessage(err, 'Buzzer konnte nicht neu geöffnet werden.'))
     } finally {

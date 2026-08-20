@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient'
 
-export async function openBuzzer(roomId: string, currentSongId: string | null, resolution?: 'wrong'): Promise<void> {
+export async function openBuzzer(roomId: string, currentSongId: string | null): Promise<void> {
   const { error } = await supabase
     .from('buzzer_state')
     .update({
@@ -10,10 +10,6 @@ export async function openBuzzer(roomId: string, currentSongId: string | null, r
       winner_player_id: null,
       opened_at: new Date().toISOString(),
       won_at: null,
-      // Nur gesetzt, wenn dieses Öffnen tatsächlich eine falsche Antwort auflöst (nicht bei
-      // einem ganz normalen frischen "Buzzer öffnen") -- last_resolution_id ist das Signal, an
-      // dem alle Clients erkennen, dass gerade ein neues Ereignis (für den Sound) passiert ist.
-      ...(resolution ? { last_resolution: resolution, last_resolution_id: crypto.randomUUID() } : {}),
     })
     .eq('room_id', roomId)
   if (error) throw error
@@ -24,7 +20,7 @@ export async function closeBuzzer(roomId: string): Promise<void> {
   if (error) throw error
 }
 
-export async function resolveBuzzer(roomId: string, resolution?: 'correct' | 'void'): Promise<void> {
+export async function resolveBuzzer(roomId: string, resolution?: 'correct' | 'wrong' | 'void'): Promise<void> {
   const { error } = await supabase
     .from('buzzer_state')
     .update({

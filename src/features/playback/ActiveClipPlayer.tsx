@@ -21,16 +21,25 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
     const saved = localStorage.getItem(VOLUME_STORAGE_KEY)
     return saved ? Number(saved) : 1
   })
-  // Ref parallel zum State, damit applySync (im Sync-Interval/-Effect) immer den aktuellen Wert
-  // sieht, ohne dass jeder Aufrufer volume durchreichen muss.
-  const volumeRef = useRef(volume)
+
+  // Lautstärke läuft über einen Web-Audio-GainNode statt HTMLMediaElement.volume: Letzteres hat
+  // auf manchen Windows-Setups (Audiotreiber/Hardwarebeschleunigung) einen bekannten Bug, bei
+  // dem .volume korrekt gesetzt wird und sich auch korrekt zurückliest, die tatsächliche
+  // Ausgabelautstärke sich aber trotzdem nicht ändert. Ein GainNode multipliziert die
+  // Audiosamples direkt im Signalpfad und umgeht dieses Problem vollständig. Nur aufgebaut, wenn
+  // showVolumeControl aktiv ist (Host/Kandidat) -- OBS hat keinen Regler und bleibt bei der
+  // simplen Variante, um dort kein neues AudioContext-Autoplay-Risiko einzugehen.
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const gainNodeRef = useRef<GainNode | null>(null)
+  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null)
+  const sourceVideoRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
     playbackRef.current = playbackState
   }, [playbackState])
 
   useEffect(() => {
-    volumeRef.current = volume
+    if (gainNodeRef.current) gainNodeRef.current.gain.value = volume
   }, [volume])
 
   useEffect(() => {
@@ -74,7 +83,8 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
       const video = videoRef.current
       const state = playbackRef.current
       if (!video || !state || !clipUrl) return
-      applySync(video, state, offsetRef.current, volumeRef.current)
+      applySync(video, state, offsetRef.current)
+      audioCtxRef.current?.resume().catch(() => {})
     }, SYNC_INTERVAL_MS)
     return () => clearInterval(id)
   }, [clipUrl])
@@ -85,38 +95,72 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
   useEffect(() => {
     const video = videoRef.current
     if (!video || !playbackState || !clipUrl) return
-    applySync(video, playbackState, offsetRef.current, volumeRef.current)
+    applySync(video, playbackState, offsetRef.current)
+    // Der Klick, der is_playing auf true setzt, liegt zu diesem Zeitpunkt bereits einen Async-
+    // Roundtrip zurück (kein direkter Nutzergesten-Kontext mehr) -- resume() hier trotzdem
+    // anzustoßen kostet nichts und greift zuverlässig, sobald der Browser Autoplay für diese
+    // Seite erlaubt (was play() an dieser Stelle nachweislich bereits darf).
+    audioCtxRef.current?.resume().catch(() => {})
   }, [playbackState?.is_playing, playbackState?.position_seconds, playbackState?.current_clip, clipUrl])
 
-  // Reagiert sofort auf Slider-Änderungen, auch während gerade nichts anderes den Sync
-  // antriggert.
+  function ensureAudioGraph(video: HTMLVideoElement) {
+    if (sourceVideoRef.current === video) return // schon verkabelt (z.B. Ref-Callback-Re-Invoke ohne echtes Remount)
+
+    if (!audioCtxRef.current) {
+      const ctx = new AudioContext()
+      const gain = ctx.createGain()
+      gain.gain.value = volume
+      gain.connect(ctx.destination)
+      audioCtxRef.current = ctx
+      gainNodeRef.current = gain
+    }
+
+    sourceNodeRef.current?.disconnect()
+    // createMediaElementSource darf pro <video>-Element nur einmal aufgerufen werden -- bei uns
+    // unkritisch, da key={clipUrl} bei jedem Songwechsel ohnehin ein frisches Element erzeugt.
+    const source = audioCtxRef.current.createMediaElementSource(video)
+    source.connect(gainNodeRef.current!)
+    sourceNodeRef.current = source
+    sourceVideoRef.current = video
+
+    audioCtxRef.current.resume().catch(() => {})
+  }
+
   useEffect(() => {
-    if (videoRef.current) videoRef.current.volume = volume
-  }, [volume, clipUrl])
+    return () => {
+      sourceNodeRef.current?.disconnect()
+      gainNodeRef.current?.disconnect()
+      audioCtxRef.current?.close().catch(() => {})
+    }
+  }, [])
 
   function handleLoadedMetadata() {
     const video = videoRef.current
     const state = playbackRef.current
     if (!video || !state) return
     video.currentTime = expectedPositionSeconds(state, offsetRef.current)
-    video.volume = volumeRef.current
     if (state.is_playing) video.play().catch(() => {})
   }
 
-  // videoRef direkt setzen UND sofort die Lautstärke anwenden, statt auf den nächsten Render-
-  // Zyklus/Effect zu warten -- garantiert, dass ein neu gemountetes <video> (key={clipUrl}
-  // wechselt bei jedem Songwechsel) nie kurz mit falscher Lautstärke startet.
+  // videoRef direkt setzen und den Audio-Graph sofort verkabeln, statt auf den nächsten Render-
+  // Zyklus/Effect zu warten -- ein neu gemountetes <video> (key={clipUrl} wechselt bei jedem
+  // Songwechsel) soll nie kurz ohne Lautstärkeanbindung starten.
   function setVideoNode(el: HTMLVideoElement | null) {
     videoRef.current = el
-    if (el) el.volume = volumeRef.current
+    if (!el) return
+    if (showVolumeControl) {
+      ensureAudioGraph(el)
+    } else {
+      el.volume = 1
+    }
   }
 
   function handleVolumeChange(e: ChangeEvent<HTMLInputElement>) {
     const v = Number(e.target.value)
     setVolume(v)
-    volumeRef.current = v
     localStorage.setItem(VOLUME_STORAGE_KEY, String(v))
-    if (videoRef.current) videoRef.current.volume = v
+    if (gainNodeRef.current) gainNodeRef.current.gain.value = v
+    audioCtxRef.current?.resume().catch(() => {})
   }
 
   // height als konkrete vh-Einheit (nicht % eines Flex-Elternteils) ist immer "definit" --
@@ -151,7 +195,10 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
         )}
 
         {showVolumeControl && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5">
+          <div
+            className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5"
+            onPointerDown={() => audioCtxRef.current?.resume().catch(() => {})}
+          >
             <span className="text-white/60 text-xs">🔊</span>
             <input
               type="range"
@@ -169,11 +216,7 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
   )
 }
 
-function applySync(video: HTMLVideoElement, state: PlaybackStateRow, offsetMs: number, volume: number) {
-  // Lautstärke bei jedem Sync-Tick neu erzwingen -- Absicherung falls etwas außerhalb unseres
-  // Codes (Erweiterung, Browser-Quirk) .volume zwischenzeitlich zurücksetzt.
-  if (video.volume !== volume) video.volume = volume
-
+function applySync(video: HTMLVideoElement, state: PlaybackStateRow, offsetMs: number) {
   const expected = expectedPositionSeconds(state, offsetMs)
   const drift = video.currentTime - expected
 

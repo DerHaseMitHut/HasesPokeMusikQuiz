@@ -54,6 +54,7 @@ interface QuizState {
   playbackState: PlaybackStateRow | null
   buzzerState: BuzzerStateRow | null
   roomLayout: RoomLayoutSettings
+  roomVdoUrl: string | null
   channel: RealtimeChannel | null
   connect: (roomId: string) => Promise<void>
   disconnect: () => void
@@ -76,6 +77,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   playbackState: null,
   buzzerState: null,
   roomLayout: DEFAULT_ROOM_LAYOUT,
+  roomVdoUrl: null,
   channel: null,
 
   connect: async (roomId) => {
@@ -90,7 +92,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         supabase.from('players').select('*').eq('room_id', roomId).order('joined_at', { ascending: true }),
         supabase.from('playback_state').select('*').eq('room_id', roomId).maybeSingle(),
         supabase.from('buzzer_state').select('*').eq('room_id', roomId).maybeSingle(),
-        supabase.from('rooms').select('layout').eq('id', roomId).maybeSingle(),
+        supabase.from('rooms').select('layout, vdo_url').eq('id', roomId).maybeSingle(),
       ])
 
       set({
@@ -99,6 +101,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         playbackState: playbackRes.data ?? null,
         buzzerState: buzzerRes.data ?? null,
         roomLayout: mergeLayout(roomRes.data?.layout),
+        roomVdoUrl: roomRes.data?.vdo_url ?? null,
       })
 
       const channel = supabase
@@ -127,8 +130,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         .on(
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
-          (payload: RealtimePostgresChangesPayload<{ layout: unknown }>) => {
-            set({ roomLayout: mergeLayout((payload.new as { layout?: unknown } | undefined)?.layout) })
+          (payload: RealtimePostgresChangesPayload<{ layout: unknown; vdo_url: string | null }>) => {
+            const row = payload.new as { layout?: unknown; vdo_url?: string | null } | undefined
+            set({ roomLayout: mergeLayout(row?.layout), roomVdoUrl: row?.vdo_url ?? null })
           },
         )
         .subscribe()
@@ -147,7 +151,15 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   disconnect: () => {
     const { channel } = get()
     if (channel) supabase.removeChannel(channel)
-    set({ roomId: null, players: [], playbackState: null, buzzerState: null, roomLayout: DEFAULT_ROOM_LAYOUT, channel: null })
+    set({
+      roomId: null,
+      players: [],
+      playbackState: null,
+      buzzerState: null,
+      roomLayout: DEFAULT_ROOM_LAYOUT,
+      roomVdoUrl: null,
+      channel: null,
+    })
   },
 }))
 

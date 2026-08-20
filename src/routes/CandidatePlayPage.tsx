@@ -24,7 +24,7 @@ export default function CandidatePlayPage() {
   const [room, setRoom] = useState<Room | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
-  const { players, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
+  const { players, buzzerState, roomLayout, roomVdoUrl, connect, disconnect } = useQuizStore()
   const [playersLoaded, setPlayersLoaded] = useState(false)
   const vdoUrlInputRef = useRef<HTMLInputElement>(null)
   const [editingVdoUrl, setEditingVdoUrl] = useState(false)
@@ -130,7 +130,7 @@ export default function CandidatePlayPage() {
           className="grid gap-2 sm:gap-3 justify-center"
           style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
         >
-          <CamTile vdoUrl={room.vdo_url} label="Gastgeber" isHost />
+          <CamTile vdoUrl={roomVdoUrl} label="Gastgeber" isHost />
           {players.map((player) => (
             <CamTile
               key={player.id}

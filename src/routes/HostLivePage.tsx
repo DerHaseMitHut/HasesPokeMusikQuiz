@@ -37,7 +37,7 @@ export default function HostLivePage() {
   const [vdoUrlError, setVdoUrlError] = useState<string | null>(null)
   const vdoUrlInputRef = useRef<HTMLInputElement>(null)
 
-  const { players, playbackState, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
+  const { players, playbackState, buzzerState, roomLayout, roomVdoUrl, connect, disconnect } = useQuizStore()
   useGameSounds()
 
   useEffect(() => {
@@ -351,7 +351,7 @@ export default function HostLivePage() {
       <div className="relative isolate shrink-0">
         <StaffLines />
         <div className="grid gap-2 sm:gap-3 justify-center" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}>
-          <CamTile vdoUrl={room.vdo_url} label="Gastgeber (Du)" isHost />
+          <CamTile vdoUrl={roomVdoUrl} label="Gastgeber (Du)" isHost />
           {players.map((player) => (
             <CamTile
               key={player.id}

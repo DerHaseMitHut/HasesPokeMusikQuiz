@@ -21,7 +21,7 @@ export default function ObsView() {
   const [room, setRoom] = useState<Room | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
-  const { players, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
+  const { players, buzzerState, roomLayout, roomVdoUrl, connect, disconnect } = useQuizStore()
   const currentSongPublic = useCurrentSongPublic()
   useGameSounds()
 
@@ -63,7 +63,7 @@ export default function ObsView() {
           className="grid gap-2 sm:gap-3 justify-center"
           style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${roomLayout.camSize}px, ${roomLayout.camSize}px))` }}
         >
-          <CamTile vdoUrl={room.vdo_url} label="Gastgeber" isHost />
+          <CamTile vdoUrl={roomVdoUrl} label="Gastgeber" isHost />
           {sorted.map((player) => (
             <CamTile
               key={player.id}

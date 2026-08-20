@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getRoomByCode, type Room } from '@/features/rooms/rooms'
+import { getRoomByCode, updateRoomVdoUrl, type Room } from '@/features/rooms/rooms'
 import { listSongsForRoom, type Song } from '@/features/songs/songs'
 import SongSelectPanel from '@/features/songs/SongSelectPanel'
 import { errorMessage } from '@/lib/errors'
@@ -32,6 +32,10 @@ export default function HostLivePage() {
   const [busy, setBusy] = useState(false)
   const [obsLinkCopied, setObsLinkCopied] = useState(false)
   const [inviteLinkCopied, setInviteLinkCopied] = useState(false)
+  const [editingVdoUrl, setEditingVdoUrl] = useState(false)
+  const [savingVdoUrl, setSavingVdoUrl] = useState(false)
+  const [vdoUrlError, setVdoUrlError] = useState<string | null>(null)
+  const vdoUrlInputRef = useRef<HTMLInputElement>(null)
 
   const { players, playbackState, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
   useGameSounds()
@@ -249,6 +253,23 @@ export default function HostLivePage() {
     }
   }
 
+  async function handleSaveVdoUrl(event: FormEvent) {
+    event.preventDefault()
+    if (!room) return
+    setSavingVdoUrl(true)
+    setVdoUrlError(null)
+    try {
+      const vdoUrl = vdoUrlInputRef.current?.value.trim() ?? ''
+      await updateRoomVdoUrl(room.id, vdoUrl)
+      setRoom({ ...room, vdo_url: vdoUrl || null })
+      setEditingVdoUrl(false)
+    } catch (err) {
+      setVdoUrlError(errorMessage(err, 'Kamera-Link konnte nicht gespeichert werden.'))
+    } finally {
+      setSavingVdoUrl(false)
+    }
+  }
+
   async function handleAvatarUpload(playerId: string, file: File) {
     setBusy(true)
     setError(null)
@@ -289,6 +310,9 @@ export default function HostLivePage() {
           <Link to={`/host/${room.code}/setup`} className="text-white/40 hover:text-white/80 text-xs underline">
             Setup
           </Link>
+          <button type="button" onClick={() => setEditingVdoUrl((v) => !v)} className="text-white/40 hover:text-white/80 text-xs underline">
+            Kamera-Link
+          </button>
           <button type="button" onClick={handleCopyInviteLink} className="text-white/40 hover:text-white/80 text-xs underline">
             {inviteLinkCopied ? 'Einladungslink kopiert!' : 'Einladungslink kopieren'}
           </button>
@@ -301,6 +325,28 @@ export default function HostLivePage() {
           <LayoutSettingsPanel roomId={room.id} layout={roomLayout} />
         </div>
       </div>
+
+      {editingVdoUrl && (
+        <form onSubmit={handleSaveVdoUrl} className="shrink-0 flex gap-2 items-start">
+          <div className="flex-1 flex flex-col gap-1">
+            <input
+              ref={vdoUrlInputRef}
+              autoFocus
+              defaultValue={room.vdo_url ?? ''}
+              placeholder="Dein Kamera-Link"
+              className="w-full rounded-lg bg-stage-900/80 border border-stage-600 px-3 py-1.5 text-sm outline-none focus:border-poke-yellow-400 focus:shadow-[0_0_0_3px_rgba(255,203,5,0.15)] transition-shadow"
+            />
+            {vdoUrlError && <p className="text-poke-red-400 text-xs">{vdoUrlError}</p>}
+          </div>
+          <button
+            type="submit"
+            disabled={savingVdoUrl}
+            className={`${PANEL_BTN} bg-stage-700 hover:bg-stage-600 disabled:opacity-50 shrink-0`}
+          >
+            {savingVdoUrl ? '…' : 'Speichern'}
+          </button>
+        </form>
+      )}
 
       <div className="relative isolate shrink-0">
         <StaffLines />

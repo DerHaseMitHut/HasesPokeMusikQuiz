@@ -202,8 +202,12 @@ function applySync(
     return
   }
 
-  if (video.paused) attemptPlay(video)
-
+  // Erst seeken/Playbackrate anpassen, DANACH erst play() anfordern -- ein currentTime-Sprung
+  // während eine vorherige play()-Anfrage noch offen ist, lässt manche Browser das zugehörige
+  // Promise mit einem Fehler abbrechen ("interrupted by a new load request"). Das wurde bisher
+  // fälschlich als von der Autoplay-Policy blockiert interpretiert (siehe attemptPlay/
+  // soundBlocked), obwohl es reine Selbstsabotage durch die falsche Reihenfolge war -- sichtbar
+  // als "Video spielt eine Sekunde, dann deckt das Ton-blockiert-Overlay alles zu".
   if (Math.abs(drift) > DRIFT_HARD_SEEK_SECONDS) {
     video.currentTime = expected
     video.playbackRate = 1
@@ -212,4 +216,6 @@ function applySync(
   } else {
     video.playbackRate = 1
   }
+
+  if (video.paused) attemptPlay(video)
 }

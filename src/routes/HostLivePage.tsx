@@ -121,6 +121,10 @@ export default function HostLivePage() {
         await setPlaying(room!.id, false, position)
       } else {
         await setPlaying(room!.id, true, playbackState.position_seconds)
+        // Öffnet den Buzzer automatisch mit, falls er noch zu ist -- schützt davor, live zu
+        // vergessen, ihn nach dem Laden/Fortsetzen eines Songs zu öffnen. Nach "Falsch" ist er
+        // bereits offen (neue Runde), dann passiert hier nichts.
+        if (!buzzerState?.is_open) await openBuzzer(room!.id, playbackState.current_song_id)
       }
     } catch (err) {
       setError(errorMessage(err, 'Wiedergabe konnte nicht geändert werden.'))
@@ -179,6 +183,7 @@ export default function HostLivePage() {
     setError(null)
     try {
       await restartClip(room!.id)
+      if (!buzzerState?.is_open) await openBuzzer(room!.id, playbackState?.current_song_id ?? null)
     } catch (err) {
       setError(errorMessage(err, 'Video konnte nicht neu gestartet werden.'))
     } finally {

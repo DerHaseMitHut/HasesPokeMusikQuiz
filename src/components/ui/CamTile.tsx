@@ -98,13 +98,13 @@ export default function CamTile({
         </div>
       </div>
 
-      <div className="glossy rounded-lg bg-stage-800/95 border border-white/10 px-3 py-2 flex items-center gap-2.5 shrink-0">
-        <span className="relative w-9 h-9 shrink-0">
+      <div className="glossy rounded-lg bg-stage-800/95 border border-white/10 px-3 py-2.5 flex items-center gap-2.5 shrink-0">
+        <span className="relative w-10 h-10 shrink-0">
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
+            <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
           ) : (
             <span
-              className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(label, Boolean(isHost))} flex items-center justify-center text-sm font-display font-800 text-white`}
+              className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatarGradient(label, Boolean(isHost))} flex items-center justify-center text-base font-display font-800 text-white`}
             >
               {label.slice(0, 1).toUpperCase()}
             </span>
@@ -133,13 +133,13 @@ export default function CamTile({
             </>
           )}
         </span>
-        <span className="flex-1 truncate text-center font-700 text-base">{label}</span>
+        <span className="flex-1 truncate text-center font-700 text-xl">{label}</span>
         {score !== undefined ? (
-          <span className="relative shrink-0 w-9">
+          <span className="relative shrink-0 w-11">
             {scorePop && (
               <span
                 key={scorePop.id}
-                className={`score-pop pointer-events-none absolute -top-1 left-1/2 font-display font-800 text-sm whitespace-nowrap ${
+                className={`score-pop pointer-events-none absolute -top-1 left-1/2 font-display font-800 text-base whitespace-nowrap ${
                   scorePop.delta > 0 ? 'text-note-green' : 'text-poke-red-400'
                 }`}
               >
@@ -151,12 +151,12 @@ export default function CamTile({
                 type="button"
                 onClick={() => setScorePopoverOpen((v) => !v)}
                 title="Punkte anpassen"
-                className="font-display font-700 text-lg text-poke-yellow-400 hover:text-poke-yellow-300 w-9 text-center"
+                className="font-display font-700 text-2xl text-poke-yellow-400 hover:text-poke-yellow-300 w-11 text-center"
               >
                 {score}
               </button>
             ) : (
-              <span className="block font-display font-700 text-lg text-poke-yellow-400 w-9 text-center">{score}</span>
+              <span className="block font-display font-700 text-2xl text-poke-yellow-400 w-11 text-center">{score}</span>
             )}
             {onAdjustScore && scorePopoverOpen && (
               <div className="absolute z-30 top-full right-0 mt-2 w-40 holo-border rounded-xl p-px shadow-[0_0_30px_-8px_rgba(0,0,0,0.8)]">
@@ -209,7 +209,7 @@ export default function CamTile({
             )}
           </span>
         ) : (
-          <span className="w-9 shrink-0" aria-hidden="true" />
+          <span className="w-11 shrink-0" aria-hidden="true" />
         )}
       </div>
     </div>

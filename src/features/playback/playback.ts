@@ -7,7 +7,7 @@ export async function loadSong(roomId: string, songId: string): Promise<void> {
       current_song_id: songId,
       current_clip: 'riddle',
       position_seconds: 0,
-      is_playing: true,
+      is_playing: false,
       hint1_shown: false,
       hint2_shown: false,
     })

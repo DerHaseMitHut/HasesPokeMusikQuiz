@@ -134,6 +134,24 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
     }
   }, [])
 
+  // Browser erlauben AudioContext.resume() nur innerhalb eines echten Nutzer-Gesten-Handlers.
+  // Die resume()-Aufrufe oben (Sync-Interval, State-Change-Effect) greifen dafür nicht zuverlässig,
+  // weil dazwischen ein Async-Roundtrip über Supabase-Realtime liegt -- der Browser wertet das nicht
+  // mehr als "gerade eben geklickt". Dieser Listener fängt stattdessen die allererste echte
+  // Interaktion irgendwo auf der Seite ab (beim Host z.B. schon der Klick auf "Play" selbst) und
+  // schaltet den Ton darüber zuverlässig frei, statt darauf zu hoffen, dass jemand zufällig den
+  // Regler anfasst.
+  useEffect(() => {
+    if (!showVolumeControl) return
+    const events: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'touchstart']
+    const tryResume = () => {
+      audioCtxRef.current?.resume().catch(() => {})
+      events.forEach((ev) => window.removeEventListener(ev, tryResume))
+    }
+    events.forEach((ev) => window.addEventListener(ev, tryResume))
+    return () => events.forEach((ev) => window.removeEventListener(ev, tryResume))
+  }, [showVolumeControl])
+
   function handleLoadedMetadata() {
     const video = videoRef.current
     const state = playbackRef.current
@@ -195,10 +213,7 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
         )}
 
         {showVolumeControl && (
-          <div
-            className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5"
-            onPointerDown={() => audioCtxRef.current?.resume().catch(() => {})}
-          >
+          <div className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5">
             <span className="text-white/60 text-xs">🔊</span>
             <input
               type="range"

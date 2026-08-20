@@ -31,6 +31,7 @@ export default function HostLivePage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [obsLinkCopied, setObsLinkCopied] = useState(false)
+  const [inviteLinkCopied, setInviteLinkCopied] = useState(false)
 
   const { players, playbackState, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
   useGameSounds()
@@ -238,6 +239,16 @@ export default function HostLivePage() {
     }
   }
 
+  async function handleCopyInviteLink() {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/join?code=${room!.code}`)
+      setInviteLinkCopied(true)
+      setTimeout(() => setInviteLinkCopied(false), 1500)
+    } catch {
+      setError('Link konnte nicht kopiert werden.')
+    }
+  }
+
   async function handleAvatarUpload(playerId: string, file: File) {
     setBusy(true)
     setError(null)
@@ -278,6 +289,9 @@ export default function HostLivePage() {
           <Link to={`/host/${room.code}/setup`} className="text-white/40 hover:text-white/80 text-xs underline">
             Setup
           </Link>
+          <button type="button" onClick={handleCopyInviteLink} className="text-white/40 hover:text-white/80 text-xs underline">
+            {inviteLinkCopied ? 'Einladungslink kopiert!' : 'Einladungslink kopieren'}
+          </button>
           <button type="button" onClick={handleCopyObsLink} className="text-white/40 hover:text-white/80 text-xs underline">
             {obsLinkCopied ? 'OBS-Link kopiert!' : 'OBS-Link kopieren'}
           </button>

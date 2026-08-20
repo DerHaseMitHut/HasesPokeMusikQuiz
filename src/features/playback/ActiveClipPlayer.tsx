@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuizStore, type PlaybackStateRow } from '@/store/quizStore'
 import { getClipPublicUrl, getSongPublic } from '@/features/songs/songs'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
@@ -7,20 +7,13 @@ const DRIFT_HARD_SEEK_SECONDS = 0.75
 const DRIFT_SOFT_SECONDS = 0.05
 const SYNC_INTERVAL_MS = 2000
 const OFFSET_REFRESH_MS = 60_000
-const VOLUME_STORAGE_KEY = 'musikquiz:volume'
 
-export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heightVh: number; showVolumeControl?: boolean }) {
+export default function ActiveClipPlayer({ heightVh }: { heightVh: number }) {
   const playbackState = useQuizStore((s) => s.playbackState)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const playbackRef = useRef<PlaybackStateRow | null>(playbackState)
   const offsetRef = useRef(0)
   const [clipUrl, setClipUrl] = useState<string | null>(null)
-  // Lautstärke ist bewusst lokal (localStorage) statt Teil des geteilten Room-States -- jeder
-  // soll sie für sich selbst einstellen können, ohne andere zu beeinflussen.
-  const [volume, setVolume] = useState(() => {
-    const saved = localStorage.getItem(VOLUME_STORAGE_KEY)
-    return saved ? Number(saved) : 1
-  })
 
   useEffect(() => {
     playbackRef.current = playbackState
@@ -81,32 +74,12 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
     applySync(video, playbackState, offsetRef.current)
   }, [playbackState?.is_playing, playbackState?.position_seconds, playbackState?.current_clip, clipUrl])
 
-  useEffect(() => {
-    if (videoRef.current) videoRef.current.volume = volume
-  }, [volume, clipUrl])
-
   function handleLoadedMetadata() {
     const video = videoRef.current
     const state = playbackRef.current
     if (!video || !state) return
     video.currentTime = expectedPositionSeconds(state, offsetRef.current)
-    video.volume = volume
     if (state.is_playing) video.play().catch(() => {})
-  }
-
-  // videoRef direkt setzen UND sofort die Lautstärke anwenden, statt auf den nächsten Render-
-  // Zyklus/Effect zu warten -- garantiert, dass ein neu gemountetes <video> (key={clipUrl}
-  // wechselt bei jedem Songwechsel) nie kurz mit falscher Lautstärke startet.
-  function setVideoNode(el: HTMLVideoElement | null) {
-    videoRef.current = el
-    if (el) el.volume = volume
-  }
-
-  function handleVolumeChange(e: ChangeEvent<HTMLInputElement>) {
-    const v = Number(e.target.value)
-    setVolume(v)
-    localStorage.setItem(VOLUME_STORAGE_KEY, String(v))
-    if (videoRef.current) videoRef.current.volume = v
   }
 
   // height als konkrete vh-Einheit (nicht % eines Flex-Elternteils) ist immer "definit" --
@@ -130,30 +103,14 @@ export default function ActiveClipPlayer({ heightVh, showVolumeControl }: { heig
         {clipUrl ? (
           <video
             key={clipUrl}
-            ref={setVideoNode}
+            ref={videoRef}
             src={clipUrl}
             className="w-full h-full object-contain"
-            muted={false}
             playsInline
             onLoadedMetadata={handleLoadedMetadata}
           />
         ) : (
           <p className="text-white/40">Kein Song geladen.</p>
-        )}
-
-        {showVolumeControl && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5">
-            <span className="text-white/60 text-xs">🔊</span>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.05}
-              value={volume}
-              onChange={handleVolumeChange}
-              className="w-20 accent-poke-yellow-400"
-            />
-          </div>
         )}
       </div>
     </div>

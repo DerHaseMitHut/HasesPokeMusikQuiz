@@ -149,7 +149,7 @@ export default function CandidatePlayPage() {
             gerade Tipps sichtbar sind -- das Video bleibt so unabhängig davon mittig. Der
             Pokeball-Backdrop im Buzzer ist absolut positioniert und zählt nicht zur Flex-Breite. */}
         <HintPanel hint1={currentSongPublic?.hint1} hint2={currentSongPublic?.hint2} heightVh={roomLayout.videoMaxHeight} />
-        <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} showVolumeControl />
+        <ActiveClipPlayer heightVh={roomLayout.videoMaxHeight} />
         <BuzzerButton roomId={room.id} playerId={myPlayer.id} hotkey={hotkey} hotkeyRecording={recording} />
       </div>
     </div>

@@ -32,6 +32,8 @@ export interface BuzzerStateRow {
   winner_player_id: string | null
   opened_at: string | null
   won_at: string | null
+  last_resolution: 'correct' | 'wrong' | 'void' | null
+  last_resolution_id: string | null
 }
 
 // Host-einstellbare Basisgrößen. Seitenverhältnisse (16:9 Kameras, 55:29 Video) ergeben sich

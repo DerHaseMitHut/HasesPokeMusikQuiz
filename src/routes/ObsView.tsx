@@ -7,6 +7,7 @@ import { useQuizStore } from '@/store/quizStore'
 import CamTile from '@/components/ui/CamTile'
 import HintPanel from '@/components/ui/HintPanel'
 import { useCurrentSongPublic } from '@/features/songs/useCurrentSongPublic'
+import { useGameSounds } from '@/features/buzzer/useGameSounds'
 import PokeballWatermark from '@/components/ui/PokeballWatermark'
 import StaffLines from '@/components/ui/StaffLines'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
@@ -22,6 +23,7 @@ export default function ObsView() {
 
   const { players, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
   const currentSongPublic = useCurrentSongPublic()
+  useGameSounds()
 
   useEffect(() => {
     if (!roomCode) return

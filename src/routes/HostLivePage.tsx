@@ -5,6 +5,7 @@ import { listSongsForRoom, type Song } from '@/features/songs/songs'
 import SongSelectPanel from '@/features/songs/SongSelectPanel'
 import { errorMessage } from '@/lib/errors'
 import { closeBuzzer, openBuzzer, resolveBuzzer } from '@/features/buzzer/buzzer'
+import { useGameSounds } from '@/features/buzzer/useGameSounds'
 import { awardPoints, kickPlayer, uploadPlayerAvatar, getPlayerAvatarUrl } from '@/features/players/players'
 import { loadSong, restartClip, setPlaying, showHint, showSolution } from '@/features/playback/playback'
 import { getServerOffsetMs, expectedPositionSeconds } from '@/features/playback/playbackSync'
@@ -32,6 +33,7 @@ export default function HostLivePage() {
   const [obsLinkCopied, setObsLinkCopied] = useState(false)
 
   const { players, playbackState, buzzerState, roomLayout, connect, disconnect } = useQuizStore()
+  useGameSounds()
 
   useEffect(() => {
     if (!roomCode) return
@@ -133,7 +135,7 @@ export default function HostLivePage() {
     setError(null)
     try {
       await awardPoints(winner.id, correctPoints)
-      await resolveBuzzer(room!.id)
+      await resolveBuzzer(room!.id, 'correct')
     } catch (err) {
       setError(errorMessage(err, 'Punkte konnten nicht vergeben werden.'))
     } finally {
@@ -149,7 +151,7 @@ export default function HostLivePage() {
       // Bei einer falschen Antwort bekommt jeder ANDERE Teilnehmer 1 Punkt.
       const others = players.filter((p) => p.id !== winner.id)
       await Promise.all(others.map((p) => awardPoints(p.id, 1)))
-      await openBuzzer(room!.id, buzzerState?.current_song_id ?? null)
+      await openBuzzer(room!.id, buzzerState?.current_song_id ?? null, 'wrong')
     } catch (err) {
       setError(errorMessage(err, 'Buzzer konnte nicht neu geöffnet werden.'))
     } finally {
@@ -164,7 +166,7 @@ export default function HostLivePage() {
       // Wertlos: weder Pluspunkte für richtig noch Punkte für die anderen -- z.B. bei
       // versehentlichem Buzzern. Buzzer bleibt geschlossen, Video bleibt pausiert, bis der
       // Host manuell weiterspielt oder neu öffnet.
-      await resolveBuzzer(room!.id)
+      await resolveBuzzer(room!.id, 'void')
     } catch (err) {
       setError(errorMessage(err, 'Konnte nicht als wertlos markiert werden.'))
     } finally {

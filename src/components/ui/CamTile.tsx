@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { normalizeVdoUrl } from '@/lib/vdoNinja'
 
 const AVATAR_GRADIENTS = [
@@ -42,6 +42,27 @@ export default function CamTile({
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [scorePopoverOpen, setScorePopoverOpen] = useState(false)
   const [customDelta, setCustomDelta] = useState('')
+
+  // Fliegendes +N/-N-Popup, sobald sich score ändert -- egal ob durch richtig/falsch, manuelle
+  // Anpassung oder von einem beliebigen anderen Client aus, da hier nur der Prop-Wert
+  // beobachtet wird, nicht die Ursache. prevScoreRef startet direkt bei score, damit beim
+  // ersten Rendern (Mount) kein Popup ausgelöst wird.
+  const prevScoreRef = useRef(score)
+  const [scorePop, setScorePop] = useState<{ delta: number; id: number } | null>(null)
+
+  useEffect(() => {
+    if (score === undefined) return
+    const prev = prevScoreRef.current
+    prevScoreRef.current = score
+    if (prev === undefined || score === prev) return
+    const delta = score - prev
+    const id = Date.now()
+    setScorePop({ delta, id })
+    const timeout = setTimeout(() => {
+      setScorePop((current) => (current?.id === id ? null : current))
+    }, 1100)
+    return () => clearTimeout(timeout)
+  }, [score])
 
   return (
     <div className="flex flex-col gap-1.5 sm:gap-2">
@@ -114,8 +135,18 @@ export default function CamTile({
         </span>
         <span className="flex-1 truncate text-center font-700 text-base">{label}</span>
         {score !== undefined ? (
-          onAdjustScore ? (
-            <span className="relative shrink-0 w-9">
+          <span className="relative shrink-0 w-9">
+            {scorePop && (
+              <span
+                key={scorePop.id}
+                className={`score-pop pointer-events-none absolute -top-1 left-1/2 font-display font-800 text-sm whitespace-nowrap ${
+                  scorePop.delta > 0 ? 'text-note-green' : 'text-poke-red-400'
+                }`}
+              >
+                {scorePop.delta > 0 ? `+${scorePop.delta}` : scorePop.delta}
+              </span>
+            )}
+            {onAdjustScore ? (
               <button
                 type="button"
                 onClick={() => setScorePopoverOpen((v) => !v)}
@@ -124,59 +155,59 @@ export default function CamTile({
               >
                 {score}
               </button>
-              {scorePopoverOpen && (
-                <div className="absolute z-30 top-full right-0 mt-2 w-40 holo-border rounded-xl p-px shadow-[0_0_30px_-8px_rgba(0,0,0,0.8)]">
-                  <div className="rounded-[11px] bg-stage-800/95 backdrop-blur-sm p-2.5 flex flex-col gap-2">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onAdjustScore(-1)
-                          setScorePopoverOpen(false)
-                        }}
-                        className="w-8 h-8 rounded-lg bg-stage-700 hover:bg-stage-600 text-white font-700"
-                      >
-                        −1
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onAdjustScore(1)
-                          setScorePopoverOpen(false)
-                        }}
-                        className="w-8 h-8 rounded-lg bg-stage-700 hover:bg-stage-600 text-white font-700"
-                      >
-                        +1
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="number"
-                        value={customDelta}
-                        onChange={(e) => setCustomDelta(e.target.value)}
-                        placeholder="±N"
-                        className="w-full min-w-0 rounded-lg bg-stage-900 border border-stage-600 px-2 py-1 text-sm outline-none focus:border-poke-yellow-400"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const delta = Number(customDelta)
-                          if (Number.isFinite(delta) && delta !== 0) onAdjustScore(delta)
-                          setCustomDelta('')
-                          setScorePopoverOpen(false)
-                        }}
-                        className="shrink-0 rounded-lg bg-poke-yellow-500 hover:bg-poke-yellow-400 text-stage-950 text-sm font-700 px-2.5 py-1"
-                      >
-                        OK
-                      </button>
-                    </div>
+            ) : (
+              <span className="block font-display font-700 text-lg text-poke-yellow-400 w-9 text-center">{score}</span>
+            )}
+            {onAdjustScore && scorePopoverOpen && (
+              <div className="absolute z-30 top-full right-0 mt-2 w-40 holo-border rounded-xl p-px shadow-[0_0_30px_-8px_rgba(0,0,0,0.8)]">
+                <div className="rounded-[11px] bg-stage-800/95 backdrop-blur-sm p-2.5 flex flex-col gap-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onAdjustScore(-1)
+                        setScorePopoverOpen(false)
+                      }}
+                      className="w-8 h-8 rounded-lg bg-stage-700 hover:bg-stage-600 text-white font-700"
+                    >
+                      −1
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onAdjustScore(1)
+                        setScorePopoverOpen(false)
+                      }}
+                      className="w-8 h-8 rounded-lg bg-stage-700 hover:bg-stage-600 text-white font-700"
+                    >
+                      +1
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      value={customDelta}
+                      onChange={(e) => setCustomDelta(e.target.value)}
+                      placeholder="±N"
+                      className="w-full min-w-0 rounded-lg bg-stage-900 border border-stage-600 px-2 py-1 text-sm outline-none focus:border-poke-yellow-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const delta = Number(customDelta)
+                        if (Number.isFinite(delta) && delta !== 0) onAdjustScore(delta)
+                        setCustomDelta('')
+                        setScorePopoverOpen(false)
+                      }}
+                      className="shrink-0 rounded-lg bg-poke-yellow-500 hover:bg-poke-yellow-400 text-stage-950 text-sm font-700 px-2.5 py-1"
+                    >
+                      OK
+                    </button>
                   </div>
                 </div>
-              )}
-            </span>
-          ) : (
-            <span className="font-display font-700 text-lg text-poke-yellow-400 shrink-0 w-9 text-center">{score}</span>
-          )
+              </div>
+            )}
+          </span>
         ) : (
           <span className="w-9 shrink-0" aria-hidden="true" />
         )}

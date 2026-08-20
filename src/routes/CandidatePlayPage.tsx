@@ -13,6 +13,7 @@ import StaffLines from '@/components/ui/StaffLines'
 import Button from '@/components/ui/Button'
 import BuzzerButton from '@/features/buzzer/BuzzerButton'
 import { useBuzzerHotkey, formatKeyCode } from '@/features/buzzer/useBuzzerHotkey'
+import { useGameSounds } from '@/features/buzzer/useGameSounds'
 import ActiveClipPlayer from '@/features/playback/ActiveClipPlayer'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import PagePlaceholder from '@/components/ui/PagePlaceholder'
@@ -31,6 +32,7 @@ export default function CandidatePlayPage() {
   const [vdoUrlError, setVdoUrlError] = useState<string | null>(null)
   const { hotkey, recording, startRecording, clearHotkey } = useBuzzerHotkey()
   const currentSongPublic = useCurrentSongPublic()
+  useGameSounds()
 
   useEffect(() => {
     if (!roomCode) return

@@ -73,16 +73,13 @@ export default function CamTile({
       >
         <div className="relative w-full h-full rounded-[10px] overflow-hidden bg-stage-900">
           {url ? (
-            <iframe src={url} className="w-full h-full" allow="camera;microphone;autoplay;fullscreen;display-capture" />
+            <iframe
+              src={url}
+              className="w-full h-full scale-[1.03]"
+              allow="camera;microphone;autoplay;fullscreen;display-capture"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">Keine Kamera</div>
-          )}
-
-          {url && (
-            <span className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-display font-700 tracking-wide text-poke-red-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-poke-red-500 live-dot" />
-              LIVE
-            </span>
           )}
 
           {onKick && (
